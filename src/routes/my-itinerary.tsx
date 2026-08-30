@@ -14,8 +14,9 @@ import {
 import { SiteHeader } from "@/components/trip/site-header";
 import { useTripPlan } from "@/lib/trip/trip-plan-context";
 import { generateItinerary } from "@/lib/trip/itinerary/engine";
-import type { ItineraryDay, ItineraryItem } from "@/lib/trip/itinerary/types";
-import { CURRENCY_SYMBOLS, INTEREST_OPTIONS } from "@/lib/trip/types";
+import type { GeneratedItinerary, ItineraryDay, ItineraryItem } from "@/lib/trip/itinerary/types";
+import { INTEREST_OPTIONS } from "@/lib/trip/types";
+
 import { formatDate } from "@/lib/trip/validation";
 
 export const Route = createFileRoute("/my-itinerary")({
@@ -91,21 +92,13 @@ function MyItineraryPage() {
   );
 }
 
-function ItineraryView({
-  itinerary,
-  currency,
-  interests,
-}: {
-  itinerary: ReturnType<typeof generateItinerary> extends infer _R ? never : never;
-  currency: string;
-  interests: string[];
-}): never;
 function ItineraryView(props: {
-  itinerary: Extract<ReturnType<typeof generateItinerary>, { ok: true }>["itinerary"];
+  itinerary: GeneratedItinerary;
   currency: string;
   interests: string[];
 }) {
   const { itinerary, interests } = props;
+
   const totalStops = itinerary.days.reduce(
     (sum, day) => sum + day.items.filter((i) => i.kind === "place").length,
     0,
