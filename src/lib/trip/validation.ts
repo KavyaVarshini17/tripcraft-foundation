@@ -7,8 +7,10 @@ export interface StepErrors {
   endDate?: string;
   travelers?: string;
   companionType?: string;
+  ageGroups?: string;
   totalBudget?: string;
   currency?: string;
+  budgetFlexibility?: string;
   interests?: string;
   pace?: string;
   transport?: string;
@@ -35,10 +37,12 @@ export function validateStep(step: number, plan: TripPlan): StepErrors {
     const t = plan.travelersAndBudget;
     if (!t.travelers || t.travelers < 1) errors.travelers = "At least one traveler.";
     if (!t.companionType) errors.companionType = "Select who you're traveling with.";
+    if (t.ageGroups.length === 0) errors.ageGroups = "Pick at least one age group.";
     const budget = Number(t.totalBudget);
     if (!t.totalBudget.trim() || Number.isNaN(budget) || budget <= 0)
       errors.totalBudget = "Enter a valid total budget.";
     if (!t.currency) errors.currency = "Select a currency.";
+    if (!t.budgetFlexibility) errors.budgetFlexibility = "Choose a budget flexibility.";
   }
 
   if (step === 2 && plan.interests.length === 0) {
