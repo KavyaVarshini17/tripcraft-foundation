@@ -163,7 +163,7 @@ function ItineraryView(props: {
 
       <div className="mt-8 space-y-8">
         {itinerary.days.map((day) => (
-          <DayCard key={day.date} day={day} currency={currency} />
+          <DayCard key={day.date} day={day} />
         ))}
       </div>
 
@@ -199,9 +199,7 @@ function ItineraryView(props: {
   );
 }
 
-function DayCard({ day, currency }: { day: ItineraryDay; currency: string }) {
-  const symbol = CURRENCY_SYMBOLS[currency] ?? "";
-  void symbol;
+function DayCard({ day }: { day: ItineraryDay }) {
   const stops = day.items.filter((i) => i.kind === "place");
 
   return (
