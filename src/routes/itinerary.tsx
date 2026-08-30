@@ -28,6 +28,8 @@ export const Route = createFileRoute("/itinerary")({
 
 function ItineraryPage() {
   const { plan, hydrated } = useTripPlan();
+  const navigate = useNavigate();
+
   const { destinationDetails: d, travelersAndBudget: t } = plan;
   const days = tripDurationDays(d.startDate, d.endDate);
   const hasPlan = Boolean(d.destination);
