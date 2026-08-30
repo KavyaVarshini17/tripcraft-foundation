@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { CalendarRange, MapPin, Sparkles, Users, Wallet } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -118,14 +118,17 @@ function ItineraryPage() {
                 <Sparkles className="size-5" />
               </span>
               <h2 className="mt-5 font-display text-2xl tracking-tight text-foreground">
-                Your itinerary hasn't been generated yet
+                Ready to build your day-by-day plan
               </h2>
               <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
-                Once generation is available, your day-by-day plan will appear right here, built
-                from the preferences you saved.
+                We'll schedule verified real places around your interests, pace, budget and daily
+                timings — with travel times, costs and directions for every stop.
               </p>
               <div className="mt-7 flex flex-wrap justify-center gap-3">
-                <Button className="rounded-full px-6" disabled>
+                <Button
+                  className="rounded-full px-6"
+                  onClick={() => navigate({ to: "/my-itinerary" })}
+                >
                   <Sparkles className="size-4" />
                   Generate My Itinerary
                 </Button>
@@ -136,8 +139,8 @@ function ItineraryPage() {
                   Edit trip details
                 </Link>
               </div>
-              <p className="mt-4 text-xs text-muted-foreground">Coming soon</p>
             </section>
+
           </>
         )}
       </main>
