@@ -32,15 +32,16 @@ export function TripPlanProvider({ children }: { children: ReactNode }) {
       if (raw) {
         const parsed = JSON.parse(raw) as Partial<TripPlan>;
         setPlan((current) => {
-          const merged = { ...current } as Record<string, unknown>;
+          const merged = { ...current } as unknown as Record<string, unknown>;
+          const currentRecord = current as unknown as Record<string, unknown>;
           for (const [key, value] of Object.entries(parsed)) {
-            const base = (current as Record<string, unknown>)[key];
+            const base = currentRecord[key];
             merged[key] =
               value && typeof value === "object" && !Array.isArray(value) && base && typeof base === "object"
                 ? { ...(base as object), ...(value as object) }
                 : value;
           }
-          return merged as TripPlan;
+          return merged as unknown as TripPlan;
         });
       }
     } catch {
