@@ -1,6 +1,21 @@
 import type { TripPlan } from "./types";
 
-export type StepErrors = Record<string, string>;
+export interface StepErrors {
+  destination?: string;
+  startingLocation?: string;
+  startDate?: string;
+  endDate?: string;
+  travelers?: string;
+  companionType?: string;
+  totalBudget?: string;
+  currency?: string;
+  interests?: string;
+  pace?: string;
+  transport?: string;
+  startTime?: string;
+  endTime?: string;
+  mealPreferences?: string;
+}
 
 /** Validates a single planner step (0-indexed). Pure, UI-free. */
 export function validateStep(step: number, plan: TripPlan): StepErrors {
