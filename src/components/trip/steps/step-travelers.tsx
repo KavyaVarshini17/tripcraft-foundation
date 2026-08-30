@@ -25,9 +25,9 @@ export function StepTravelers({ errors }: { errors: StepErrors }) {
   const t = plan.travelersAndBudget;
 
   const toggleAgeGroup = (value: AgeGroup) => {
-    const ageGroups = t.ageGroups.includes(value)
-      ? t.ageGroups.filter((g) => g !== value)
-      : [...t.ageGroups, value];
+    const ageGroups = (t.ageGroups ?? []).includes(value)
+      ? (t.ageGroups ?? []).filter((g) => g !== value)
+      : [...(t.ageGroups ?? []), value];
     updateSection("travelersAndBudget", { ageGroups });
   };
 
@@ -92,7 +92,7 @@ export function StepTravelers({ errors }: { errors: StepErrors }) {
             <OptionChip
               key={option.value}
               label={option.label}
-              selected={t.ageGroups.includes(option.value)}
+              selected={(t.ageGroups ?? []).includes(option.value)}
               onClick={() => toggleAgeGroup(option.value)}
             />
           ))}

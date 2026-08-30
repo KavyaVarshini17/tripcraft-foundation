@@ -31,7 +31,18 @@ export function TripPlanProvider({ children }: { children: ReactNode }) {
       const raw = window.localStorage.getItem(STORAGE_KEY);
       if (raw) {
         const parsed = JSON.parse(raw) as Partial<TripPlan>;
-        setPlan((current) => ({ ...current, ...parsed }));
+        setPlan((current) => {
+          const merged = { ...current } as unknown as Record<string, unknown>;
+          const currentRecord = current as unknown as Record<string, unknown>;
+          for (const [key, value] of Object.entries(parsed)) {
+            const base = currentRecord[key];
+            merged[key] =
+              value && typeof value === "object" && !Array.isArray(value) && base && typeof base === "object"
+                ? { ...(base as object), ...(value as object) }
+                : value;
+          }
+          return merged as unknown as TripPlan;
+        });
       }
     } catch {
       // ignore corrupted local state
