@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ItineraryRouteImport } from './routes/itinerary'
+import { Route as MyItineraryRouteImport } from './routes/my-itinerary'
 import { Route as PlannerRouteImport } from './routes/planner'
 
 const IndexRoute = IndexRouteImport.update({
@@ -23,6 +24,11 @@ const ItineraryRoute = ItineraryRouteImport.update({
   path: '/itinerary',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MyItineraryRoute = MyItineraryRouteImport.update({
+  id: '/my-itinerary',
+  path: '/my-itinerary',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PlannerRoute = PlannerRouteImport.update({
   id: '/planner',
   path: '/planner',
@@ -32,30 +38,34 @@ const PlannerRoute = PlannerRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/itinerary': typeof ItineraryRoute
+  '/my-itinerary': typeof MyItineraryRoute
   '/planner': typeof PlannerRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/itinerary': typeof ItineraryRoute
+  '/my-itinerary': typeof MyItineraryRoute
   '/planner': typeof PlannerRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/itinerary': typeof ItineraryRoute
+  '/my-itinerary': typeof MyItineraryRoute
   '/planner': typeof PlannerRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/itinerary' | '/planner'
+  fullPaths: '/' | '/itinerary' | '/my-itinerary' | '/planner'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/itinerary' | '/planner'
-  id: '__root__' | '/' | '/itinerary' | '/planner'
+  to: '/' | '/itinerary' | '/my-itinerary' | '/planner'
+  id: '__root__' | '/' | '/itinerary' | '/my-itinerary' | '/planner'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ItineraryRoute: typeof ItineraryRoute
+  MyItineraryRoute: typeof MyItineraryRoute
   PlannerRoute: typeof PlannerRoute
 }
 
@@ -75,6 +85,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ItineraryRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/my-itinerary': {
+      id: '/my-itinerary'
+      path: '/my-itinerary'
+      fullPath: '/my-itinerary'
+      preLoaderRoute: typeof MyItineraryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/planner': {
       id: '/planner'
       path: '/planner'
@@ -88,6 +105,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ItineraryRoute: ItineraryRoute,
+  MyItineraryRoute: MyItineraryRoute,
   PlannerRoute: PlannerRoute,
 }
 export const routeTree = rootRouteImport
