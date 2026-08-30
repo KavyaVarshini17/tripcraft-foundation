@@ -11,7 +11,7 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
-import { TripPlanProvider } from "../lib/trip/trip-plan-context";
+import { TripPlanProvider } from "@/lib/trip/trip-plan-context";
 
 function NotFoundComponent() {
   return (
