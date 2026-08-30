@@ -234,7 +234,10 @@ export function generateItinerary(plan: TripPlan, options: GenerateOptions = {})
     let dayCost = 0;
 
     while (placed < cap) {
-      // Lunch break around midday.
+      // Midday meal break; past late afternoon the dinner break covers it.
+      if (!lunchDone && clock >= 16 * 60) {
+        lunchDone = true;
+      }
       if (!lunchDone && clock >= 13 * 60 && clock + 60 <= dayEnd) {
         const cost = MEAL_COST_PER_PERSON.lunch * travelers;
         items.push({
