@@ -81,7 +81,6 @@ function MyItineraryPage() {
         ) : (
           <ItineraryView
             itinerary={result.itinerary}
-            currency={plan.travelersAndBudget.currency}
             interests={INTEREST_OPTIONS.filter((i) => plan.interests.includes(i.value)).map(
               (i) => i.label,
             )}
@@ -94,7 +93,6 @@ function MyItineraryPage() {
 
 function ItineraryView(props: {
   itinerary: GeneratedItinerary;
-  currency: string;
   interests: string[];
 }) {
   const { itinerary, interests } = props;
