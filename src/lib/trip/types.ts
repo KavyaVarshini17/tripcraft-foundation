@@ -52,11 +52,17 @@ export interface DestinationDetails {
   endDate: string; // ISO yyyy-mm-dd
 }
 
+export type AgeGroup = "children" | "teenagers" | "adults" | "seniors";
+
+export type BudgetFlexibility = "strict" | "flexible";
+
 export interface TravelersAndBudget {
   travelers: number;
   companionType: CompanionType | "";
+  ageGroups: AgeGroup[];
   totalBudget: string; // kept as string for controlled input; parse at use-site
   currency: string;
+  budgetFlexibility: BudgetFlexibility | "";
 }
 
 export interface TravelStyle {
@@ -95,8 +101,10 @@ export const createEmptyTripPlan = (): TripPlan => ({
   travelersAndBudget: {
     travelers: 2,
     companionType: "",
+    ageGroups: [],
     totalBudget: "",
     currency: "INR",
+    budgetFlexibility: "",
   },
   interests: [],
   travelStyle: { pace: "", transport: [] },
@@ -131,6 +139,33 @@ export const COMPANION_OPTIONS: { value: CompanionType; label: string }[] = [
   { value: "friends", label: "Friends" },
   { value: "other", label: "Other" },
 ];
+
+export const AGE_GROUP_OPTIONS: { value: AgeGroup; label: string }[] = [
+  { value: "children", label: "Children" },
+  { value: "teenagers", label: "Teenagers" },
+  { value: "adults", label: "Adults" },
+  { value: "seniors", label: "Seniors" },
+];
+
+export const BUDGET_FLEXIBILITY_OPTIONS: {
+  value: BudgetFlexibility;
+  label: string;
+  hint: string;
+}[] = [
+  { value: "strict", label: "Strict", hint: "Stay within my budget" },
+  { value: "flexible", label: "Flexible", hint: "Slightly exceed if worthwhile" },
+];
+
+export const CURRENCY_SYMBOLS: Record<string, string> = {
+  INR: "₹",
+  USD: "$",
+  EUR: "€",
+  GBP: "£",
+  AED: "د.إ",
+  SGD: "S$",
+  JPY: "¥",
+  AUD: "A$",
+};
 
 export const PACE_OPTIONS: { value: TravelPace; label: string; hint: string }[] = [
   { value: "relaxed", label: "Relaxed", hint: "Fewer stops, more breathing room" },
