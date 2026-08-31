@@ -291,7 +291,7 @@ function normalizeResponse(body: unknown, plan: TripPlan): ItineraryResult {
 
   const city = asString(root.destination, plan.destinationDetails.destination);
   const days = daysRaw
-    .map((d, i) => normalizeDay(d, i, city))
+    .map((d: unknown, i: number) => normalizeDay(d, i, city))
     .filter((d): d is ItineraryDay => d !== null);
 
   const totalStops = days.reduce(
