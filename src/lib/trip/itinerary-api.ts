@@ -314,7 +314,7 @@ function normalizeResponse(body: unknown, plan: TripPlan): ItineraryResult {
 
   const unscheduledRaw = Array.isArray(root.unscheduled) ? root.unscheduled : [];
   const unscheduled = unscheduledRaw
-    .map((u) => {
+    .map((u: unknown) => {
       const r = asRecord(u);
       if (!r) return null;
       const name = asString(r.name);
@@ -331,11 +331,11 @@ function normalizeResponse(body: unknown, plan: TripPlan): ItineraryResult {
     days,
     totalCostInr: asNumber(
       root.total_estimated_cost ?? root.total_cost_inr ?? root.total_cost,
-      days.reduce((s, d) => s + d.totalCostInr, 0),
+      days.reduce((s: number, d: ItineraryDay) => s + d.totalCostInr, 0),
     ),
     totalDistanceKm: asNumber(
       root.total_distance_km ?? root.total_distance,
-      Math.round(days.reduce((s, d) => s + d.totalDistanceKm, 0) * 10) / 10,
+      Math.round(days.reduce((s: number, d: ItineraryDay) => s + d.totalDistanceKm, 0) * 10) / 10,
     ),
     travelers: asNumber(root.travelers, plan.travelersAndBudget.travelers),
     unscheduled,
