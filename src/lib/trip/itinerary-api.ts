@@ -263,7 +263,7 @@ function normalizeDay(raw: unknown, index: number, city: string): ItineraryDay |
     totalDistanceKm: asNumber(r.estimated_distance_km ?? r.total_distance_km ?? r.total_distance, 0),
     totalTravelMinutes: asNumber(
       r.total_travel_minutes,
-      items.reduce((s, i) => s + (i.kind === "place" ? i.travelFromPrevious.travelMinutes : 0), 0),
+      items.reduce((s: number, i: ItineraryItem) => s + (i.kind === "place" ? i.travelFromPrevious.travelMinutes : 0), 0),
     ),
     notes: asStringArray(r.notes),
   };
@@ -292,7 +292,7 @@ function normalizeResponse(body: unknown, plan: TripPlan): ItineraryResult {
   const city = asString(root.destination, plan.destinationDetails.destination);
   const days = daysRaw
     .map((d: unknown, i: number) => normalizeDay(d, i, city))
-    .filter((d): d is ItineraryDay => d !== null);
+    .filter((d: ItineraryDay | null): d is ItineraryDay => d !== null);
 
   const totalStops = (days as ItineraryDay[]).reduce(
     (s: number, d: ItineraryDay) =>
