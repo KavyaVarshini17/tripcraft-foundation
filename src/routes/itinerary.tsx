@@ -1,9 +1,11 @@
+import { useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { CalendarRange, MapPin, Sparkles, Users, Wallet } from "lucide-react";
+import { AlertTriangle, CalendarRange, Loader2, MapPin, Sparkles, Users, Wallet } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { SiteHeader } from "@/components/trip/site-header";
 import { useTripPlan } from "@/lib/trip/trip-plan-context";
+import { generateItineraryRemote, saveGeneratedResult } from "@/lib/trip/itinerary-api";
 import { COMPANION_OPTIONS, INTEREST_OPTIONS } from "@/lib/trip/types";
 import { formatDate, tripDurationDays } from "@/lib/trip/validation";
 
@@ -29,6 +31,24 @@ export const Route = createFileRoute("/itinerary")({
 function ItineraryPage() {
   const { plan, hydrated } = useTripPlan();
   const navigate = useNavigate();
+  const [generating, setGenerating] = useState(false);
+  const [generateError, setGenerateError] = useState<{ reason: string; details: string[] } | null>(
+    null,
+  );
+
+  const handleGenerate = async () => {
+    if (generating) return;
+    setGenerating(true);
+    setGenerateError(null);
+    const result = await generateItineraryRemote(plan);
+    saveGeneratedResult(result);
+    setGenerating(false);
+    if (result.ok) {
+      navigate({ to: "/my-itinerary" });
+    } else {
+      setGenerateError({ reason: result.reason, details: result.details });
+    }
+  };
 
   const { destinationDetails: d, travelersAndBudget: t } = plan;
   const days = tripDurationDays(d.startDate, d.endDate);
@@ -117,22 +137,41 @@ function ItineraryPage() {
 
             <section className="mt-6 rounded-3xl border border-dashed border-border bg-card p-10 text-center shadow-soft">
               <span className="mx-auto flex size-12 items-center justify-center rounded-2xl bg-secondary text-primary">
-                <Sparkles className="size-5" />
+                {generating ? (
+                  <Loader2 className="size-5 animate-spin" />
+                ) : (
+                  <Sparkles className="size-5" />
+                )}
               </span>
               <h2 className="mt-5 font-display text-2xl tracking-tight text-foreground">
-                Ready to build your day-by-day plan
+                {generating ? "Building your itinerary…" : "Ready to build your day-by-day plan"}
               </h2>
               <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
-                We'll schedule verified real places around your interests, pace, budget and daily
-                timings — with travel times, costs and directions for every stop.
+                {generating
+                  ? "Finding verified real places and scheduling your days. This can take a few seconds."
+                  : "We'll schedule verified real places around your interests, pace, budget and daily timings — with travel times, costs and directions for every stop."}
               </p>
+              {generateError && (
+                <div className="mx-auto mt-5 max-w-md rounded-2xl border border-destructive/30 bg-destructive/5 p-4 text-left">
+                  <p className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                    <AlertTriangle className="size-4 text-destructive" />
+                    {generateError.reason}
+                  </p>
+                  <ul className="mt-2 space-y-1 text-xs text-muted-foreground">
+                    {generateError.details.map((detail) => (
+                      <li key={detail}>{detail}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
               <div className="mt-7 flex flex-wrap justify-center gap-3">
-                <Button
-                  className="rounded-full px-6"
-                  onClick={() => navigate({ to: "/my-itinerary" })}
-                >
-                  <Sparkles className="size-4" />
-                  Generate My Itinerary
+                <Button className="rounded-full px-6" onClick={handleGenerate} disabled={generating}>
+                  {generating ? (
+                    <Loader2 className="size-4 animate-spin" />
+                  ) : (
+                    <Sparkles className="size-4" />
+                  )}
+                  {generating ? "Generating…" : "Generate My Itinerary"}
                 </Button>
                 <Link
                   to="/planner"

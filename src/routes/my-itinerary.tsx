@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   AlertTriangle,
@@ -7,14 +7,16 @@ import {
   MapPin,
   Navigation,
   Route as RouteIcon,
+  Sparkles,
   Timer,
   Utensils,
 } from "lucide-react";
 
 import { SiteHeader } from "@/components/trip/site-header";
 import { useTripPlan } from "@/lib/trip/trip-plan-context";
-import { generateItinerary } from "@/lib/trip/itinerary/engine";
+import { loadGeneratedResult } from "@/lib/trip/itinerary-api";
 import type { GeneratedItinerary, ItineraryDay, ItineraryItem } from "@/lib/trip/itinerary/types";
+import type { ItineraryResult } from "@/lib/trip/itinerary/types";
 import { INTEREST_OPTIONS } from "@/lib/trip/types";
 
 import { formatDate } from "@/lib/trip/validation";
@@ -49,15 +51,39 @@ const minutesLabel = (minutes: number) => {
 
 function MyItineraryPage() {
   const { plan, hydrated } = useTripPlan();
-  const result = useMemo(() => (hydrated ? generateItinerary(plan) : null), [plan, hydrated]);
+  const [result, setResult] = useState<ItineraryResult | null | undefined>(undefined);
+
+  useEffect(() => {
+    if (!hydrated) return;
+    setResult(loadGeneratedResult());
+  }, [hydrated]);
 
   return (
     <div className="min-h-screen bg-background">
       <SiteHeader />
 
       <main className="mx-auto w-full max-w-4xl px-5 py-10 sm:py-14">
-        {!hydrated || !result ? (
+        {!hydrated || result === undefined ? (
           <div className="h-64 animate-pulse rounded-3xl border border-border bg-card" />
+        ) : result === null ? (
+          <section className="rounded-3xl border border-dashed border-border bg-card p-10 text-center shadow-soft">
+            <span className="mx-auto flex size-12 items-center justify-center rounded-2xl bg-secondary text-primary">
+              <Sparkles className="size-5" />
+            </span>
+            <h1 className="mt-5 font-display text-2xl tracking-tight text-foreground">
+              No itinerary generated yet
+            </h1>
+            <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
+              Head to your trip summary and tap "Generate My Itinerary" to build a day-by-day plan
+              from verified real places.
+            </p>
+            <Link
+              to="/itinerary"
+              className="mt-7 inline-flex items-center rounded-full border border-input px-6 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
+            >
+              Go to trip summary
+            </Link>
+          </section>
         ) : !result.ok ? (
           <section className="rounded-3xl border border-dashed border-border bg-card p-10 text-center shadow-soft">
             <span className="mx-auto flex size-12 items-center justify-center rounded-2xl bg-secondary text-primary">
@@ -71,12 +97,20 @@ function MyItineraryPage() {
                 <li key={detail}>{detail}</li>
               ))}
             </ul>
-            <Link
-              to="/planner"
-              className="mt-7 inline-flex items-center rounded-full border border-input px-6 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
-            >
-              Adjust trip details
-            </Link>
+            <div className="mt-7 flex flex-wrap justify-center gap-3">
+              <Link
+                to="/itinerary"
+                className="inline-flex items-center rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
+              >
+                Try again
+              </Link>
+              <Link
+                to="/planner"
+                className="inline-flex items-center rounded-full border border-input px-6 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
+              >
+                Adjust trip details
+              </Link>
+            </div>
           </section>
         ) : (
           <ItineraryView
