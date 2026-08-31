@@ -1,9 +1,11 @@
+import { useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { CalendarRange, MapPin, Sparkles, Users, Wallet } from "lucide-react";
+import { AlertTriangle, CalendarRange, Loader2, MapPin, Sparkles, Users, Wallet } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { SiteHeader } from "@/components/trip/site-header";
 import { useTripPlan } from "@/lib/trip/trip-plan-context";
+import { generateItineraryRemote, saveGeneratedResult } from "@/lib/trip/itinerary-api";
 import { COMPANION_OPTIONS, INTEREST_OPTIONS } from "@/lib/trip/types";
 import { formatDate, tripDurationDays } from "@/lib/trip/validation";
 
@@ -29,6 +31,24 @@ export const Route = createFileRoute("/itinerary")({
 function ItineraryPage() {
   const { plan, hydrated } = useTripPlan();
   const navigate = useNavigate();
+  const [generating, setGenerating] = useState(false);
+  const [generateError, setGenerateError] = useState<{ reason: string; details: string[] } | null>(
+    null,
+  );
+
+  const handleGenerate = async () => {
+    if (generating) return;
+    setGenerating(true);
+    setGenerateError(null);
+    const result = await generateItineraryRemote(plan);
+    saveGeneratedResult(result);
+    setGenerating(false);
+    if (result.ok) {
+      navigate({ to: "/my-itinerary" });
+    } else {
+      setGenerateError({ reason: result.reason, details: result.details });
+    }
+  };
 
   const { destinationDetails: d, travelersAndBudget: t } = plan;
   const days = tripDurationDays(d.startDate, d.endDate);

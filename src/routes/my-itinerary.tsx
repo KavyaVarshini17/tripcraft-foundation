@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   AlertTriangle,
@@ -7,14 +7,16 @@ import {
   MapPin,
   Navigation,
   Route as RouteIcon,
+  Sparkles,
   Timer,
   Utensils,
 } from "lucide-react";
 
 import { SiteHeader } from "@/components/trip/site-header";
 import { useTripPlan } from "@/lib/trip/trip-plan-context";
-import { generateItinerary } from "@/lib/trip/itinerary/engine";
+import { loadGeneratedResult } from "@/lib/trip/itinerary-api";
 import type { GeneratedItinerary, ItineraryDay, ItineraryItem } from "@/lib/trip/itinerary/types";
+import type { ItineraryResult } from "@/lib/trip/itinerary/types";
 import { INTEREST_OPTIONS } from "@/lib/trip/types";
 
 import { formatDate } from "@/lib/trip/validation";
