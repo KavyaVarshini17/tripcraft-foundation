@@ -240,9 +240,9 @@ function normalizeDay(raw: unknown, index: number, city: string): ItineraryDay |
       : Array.isArray(r.stops)
         ? r.stops
         : [];
-  const items = itemsRaw
-    .map((item, i) => normalizeItem(item, i, index, city))
-    .filter((i): i is ItineraryItem => i !== null);
+  const items: ItineraryItem[] = (itemsRaw as unknown[])
+    .map((item: unknown, i: number) => normalizeItem(item, i, index, city))
+    .filter((i: ItineraryItem | null): i is ItineraryItem => i !== null);
 
   return {
     dayNumber: asNumber(r.day_number ?? r.dayNumber, index + 1),
@@ -258,7 +258,7 @@ function normalizeDay(raw: unknown, index: number, city: string): ItineraryDay |
     },
     totalCostInr: asNumber(
       r.estimated_cost ?? r.total_cost_inr ?? r.total_cost,
-      items.reduce((s, i) => s + i.costInr, 0),
+      items.reduce((s: number, i: ItineraryItem) => s + i.costInr, 0),
     ),
     totalDistanceKm: asNumber(r.estimated_distance_km ?? r.total_distance_km ?? r.total_distance, 0),
     totalTravelMinutes: asNumber(
