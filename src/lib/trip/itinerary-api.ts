@@ -158,6 +158,8 @@ function normalizePlace(raw: AnyRecord, index: number, city: string): PlaceRecor
     (Number.isFinite(lat) && Number.isFinite(lng)
       ? `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`
       : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${name} ${city}`)}`);
+  const noteValue =
+    raw.description != null || raw.note != null ? asString(raw.note ?? raw.description) : null;
   return {
     id: asString(raw.place_id ?? raw.id, `api-place-${index}`),
     name,
@@ -174,10 +176,7 @@ function normalizePlace(raw: AnyRecord, index: number, city: string): PlaceRecor
     ),
     estimatedEntryCostInr: asNumber(raw.entry_fee ?? raw.entry_cost ?? raw.cost, 0),
     googleMapsUrl: mapsUrl,
-    note:
-      raw.description != null || raw.note != null
-        ? asString(raw.note ?? raw.description)
-        : undefined,
+    ...(noteValue ? { note: noteValue } : {}),
   };
 }
 
