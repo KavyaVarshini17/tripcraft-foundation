@@ -294,8 +294,9 @@ function normalizeResponse(body: unknown, plan: TripPlan): ItineraryResult {
     .map((d: unknown, i: number) => normalizeDay(d, i, city))
     .filter((d): d is ItineraryDay => d !== null);
 
-  const totalStops = days.reduce(
-    (s, d) => s + d.items.filter((i) => i.kind === "place").length,
+  const totalStops = (days as ItineraryDay[]).reduce(
+    (s: number, d: ItineraryDay) =>
+      s + d.items.filter((i: ItineraryItem) => i.kind === "place").length,
     0,
   );
 
@@ -320,7 +321,10 @@ function normalizeResponse(body: unknown, plan: TripPlan): ItineraryResult {
       const name = asString(r.name);
       return name ? { name, reason: asString(r.reason, "Could not be scheduled.") } : null;
     })
-    .filter((u): u is { name: string; reason: string } => u !== null);
+    .filter(
+      (u: { name: string; reason: string } | null): u is { name: string; reason: string } =>
+        u !== null,
+    );
 
   const itinerary: GeneratedItinerary = {
     destination: city,
