@@ -97,7 +97,10 @@ export async function generateItineraryRemote(plan: TripPlan): Promise<Itinerary
 
 /* ------------------------- response normalization ------------------------- */
 
-type AnyRecord = Record<string, unknown>;
+// The Edge Function's response shape is external and flexible, so we treat
+// parsed records as `any` here and narrow with the as* helpers below.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type AnyRecord = any;
 
 const asRecord = (value: unknown): AnyRecord | null =>
   value && typeof value === "object" && !Array.isArray(value) ? (value as AnyRecord) : null;
