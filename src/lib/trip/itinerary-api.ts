@@ -301,6 +301,115 @@ function normalizeDay(raw: unknown, index: number, city: string): ItineraryDay |
   };
 }
 
+const minutesFromTime = (time: string): number => {
+  const [hours = "0", minutes = "0"] = time.split(":");
+  return Number(hours) * 60 + Number(minutes);
+};
+
+const placeCount = (day: ItineraryDay): number =>
+  day.items.filter((item) => item.kind === "place").length;
+
+function itemFitsDay(
+  item: ItineraryItem,
+  existingItems: ItineraryItem[],
+  plan: TripPlan,
+): boolean {
+  const start = minutesFromTime(item.startTime);
+  const end = minutesFromTime(item.endTime);
+  const preferredStart = minutesFromTime(plan.dailyPreferences.startTime || "00:00");
+  const preferredEnd = minutesFromTime(plan.dailyPreferences.endTime || "23:59");
+
+  if (start < preferredStart || end > preferredEnd || end <= start) return false;
+  if (
+    item.kind === "place" &&
+    (start < minutesFromTime(item.place.openingTime) ||
+      end > minutesFromTime(item.place.closingTime))
+  ) {
+    return false;
+  }
+
+  return existingItems.every((existing) => {
+    const existingStart = minutesFromTime(existing.startTime);
+    const existingEnd = minutesFromTime(existing.endTime);
+    return end <= existingStart || start >= existingEnd;
+  });
+}
+
+function recalculateDay(day: ItineraryDay): ItineraryDay {
+  return {
+    ...day,
+    items: day.items.slice().sort((a, b) => minutesFromTime(a.startTime) - minutesFromTime(b.startTime)),
+    totalCostInr: day.items.reduce((sum, item) => sum + item.costInr, 0),
+    totalDistanceKm:
+      Math.round(
+        day.items.reduce(
+          (sum, item) => sum + (item.kind === "place" ? item.travelFromPrevious.distanceKm : 0),
+          0,
+        ) * 10,
+      ) / 10,
+    totalTravelMinutes: day.items.reduce(
+      (sum, item) => sum + (item.kind === "place" ? item.travelFromPrevious.travelMinutes : 0),
+      0,
+    ),
+  };
+}
+
+/**
+ * The service can return the full date range while greedily exhausting its
+ * verified-place pool in the first few days. When there are enough unique,
+ * already-verified places for every requested day, move one compatible stop
+ * at a time from overfilled days into empty days. Places are never cloned and
+ * their service-provided times, opening-hours checks and travel data remain
+ * unchanged.
+ */
+function rebalanceSparseDays(days: ItineraryDay[], plan: TripPlan): ItineraryDay[] {
+  const emptyIndexes = days
+    .map((day, index) => (placeCount(day) === 0 ? index : -1))
+    .filter((index) => index >= 0);
+  if (emptyIndexes.length === 0) return days;
+
+  const placeIds = days.flatMap((day) =>
+    day.items.filter((item) => item.kind === "place").map((item) => item.place.id),
+  );
+  if (placeIds.length < days.length || new Set(placeIds).size !== placeIds.length) return days;
+
+  const balanced = days.map((day) => ({ ...day, items: day.items.slice() }));
+
+  for (const targetIndex of emptyIndexes) {
+    const target = balanced[targetIndex];
+    if (!target) return days;
+
+    const donors = balanced
+      .map((day, index) => ({ index, count: placeCount(day) }))
+      .filter(({ count }) => count > 1)
+      .sort((a, b) => b.count - a.count || a.index - b.index);
+
+    let moved = false;
+    for (const donor of donors) {
+      const source = balanced[donor.index];
+      if (!source) continue;
+
+      for (let itemIndex = source.items.length - 1; itemIndex >= 0; itemIndex -= 1) {
+        const candidate = source.items[itemIndex];
+        if (!candidate || candidate.kind !== "place") continue;
+        if (!itemFitsDay(candidate, target.items, plan)) continue;
+
+        source.items.splice(itemIndex, 1);
+        target.items.push(candidate);
+        moved = true;
+        break;
+      }
+      if (moved) break;
+    }
+
+    // Never return a partially rebalanced itinerary when a target date cannot
+    // safely accept one of the verified stops.
+    if (!moved) return days;
+  }
+
+  return balanced.map(recalculateDay);
+}
+
 function normalizeResponse(body: unknown, plan: TripPlan): ItineraryResult {
   const root = asRecord(body);
   if (!root) {
@@ -338,11 +447,12 @@ function normalizeResponse(body: unknown, plan: TripPlan): ItineraryResult {
             86_400_000,
         ) + 1
       : parsedDays.length;
-  const days = parsedDays.slice(0, spanDays).map((day: ItineraryDay, i: number) => ({
+  const alignedDays = parsedDays.slice(0, spanDays).map((day: ItineraryDay, i: number) => ({
     ...day,
     dayNumber: i + 1,
     date: startDate ? addDaysIso(startDate, i) : day.date,
   }));
+  const days = rebalanceSparseDays(alignedDays, plan);
 
   const totalStops = (days as ItineraryDay[]).reduce(
     (s: number, d: ItineraryDay) =>
