@@ -154,13 +154,20 @@ export function generateItinerary(plan: TripPlan, options: GenerateOptions = {})
     };
   }
 
-  const dayCount = Math.max(
-    1,
+  if (d.endDate < d.startDate) {
+    return {
+      ok: false,
+      reason: "Your travel dates are invalid.",
+      details: ["The end date must be on or after the start date. Fix the dates in the planner and try again."],
+    };
+  }
+
+  // One itinerary day per calendar day from start date through end date, inclusive.
+  const dayCount =
     Math.round(
       (new Date(`${d.endDate}T00:00:00`).getTime() - new Date(`${d.startDate}T00:00:00`).getTime()) /
         86_400_000,
-    ) + 1,
-  );
+    ) + 1;
 
   const mode = pickMode(plan);
   const travelers = Math.max(1, t.travelers || 1);
