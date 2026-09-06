@@ -313,9 +313,27 @@ function normalizeResponse(body: unknown, plan: TripPlan): ItineraryResult {
         : [];
 
   const city = asString(root.destination, plan.destinationDetails.destination);
-  const days = daysRaw
+  const parsedDays = daysRaw
     .map((d: unknown, i: number) => normalizeDay(d, i, city))
     .filter((d: ItineraryDay | null): d is ItineraryDay => d !== null);
+
+  // One itinerary day per calendar day, start date through end date inclusive:
+  // index days onto the user's actual date range so the result always matches
+  // the selected trip duration, never a fixed count.
+  const { startDate, endDate } = plan.destinationDetails;
+  const spanDays =
+    startDate && endDate && endDate >= startDate
+      ? Math.round(
+          (new Date(`${endDate}T00:00:00`).getTime() -
+            new Date(`${startDate}T00:00:00`).getTime()) /
+            86_400_000,
+        ) + 1
+      : parsedDays.length;
+  const days = parsedDays.slice(0, spanDays).map((day, i) => ({
+    ...day,
+    dayNumber: i + 1,
+    date: startDate ? addDaysIso(startDate, i) : day.date,
+  }));
 
   const totalStops = (days as ItineraryDay[]).reduce(
     (s: number, d: ItineraryDay) =>
