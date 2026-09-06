@@ -338,7 +338,7 @@ function normalizeResponse(body: unknown, plan: TripPlan): ItineraryResult {
             86_400_000,
         ) + 1
       : parsedDays.length;
-  const days = parsedDays.slice(0, spanDays).map((day, i) => ({
+  const days = parsedDays.slice(0, spanDays).map((day: ItineraryDay, i: number) => ({
     ...day,
     dayNumber: i + 1,
     date: startDate ? addDaysIso(startDate, i) : day.date,
