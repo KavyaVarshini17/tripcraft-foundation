@@ -7,6 +7,7 @@
  */
 
 import type { TripPlan, InterestTag } from "./types";
+import { todayIsoDate } from "./validation";
 import type {
   GeneratedItinerary,
   ItineraryDay,
@@ -55,6 +56,29 @@ export function buildPayload(plan: TripPlan): GenerateItineraryPayload {
 }
 
 export async function generateItineraryRemote(plan: TripPlan): Promise<ItineraryResult> {
+  const d = plan.destinationDetails;
+  if (!d.startDate || !d.endDate) {
+    return {
+      ok: false,
+      reason: "Your travel dates are missing.",
+      details: ["Pick a start and end date in the planner, then try again."],
+    };
+  }
+  if (d.endDate < d.startDate) {
+    return {
+      ok: false,
+      reason: "Your travel dates are invalid.",
+      details: ["The end date must be on or after the start date. Fix the dates in the planner and try again."],
+    };
+  }
+  if (d.startDate < todayIsoDate()) {
+    return {
+      ok: false,
+      reason: "Your start date is in the past.",
+      details: ["Choose today or a future start date in the planner, then try again."],
+    };
+  }
+
   let response: Response;
   try {
     response = await fetch(ENDPOINT, {
@@ -140,6 +164,15 @@ const asCategories = (value: unknown): InterestTag[] => {
     KNOWN_INTERESTS.includes(c as InterestTag),
   );
   return matched.length > 0 ? matched : ["culture"];
+};
+
+/** Adds `count` calendar days to an ISO yyyy-mm-dd date. */
+const addDaysIso = (iso: string, count: number): string => {
+  const d = new Date(`${iso}T00:00:00`);
+  d.setDate(d.getDate() + count);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
+    d.getDate(),
+  ).padStart(2, "0")}`;
 };
 
 /** Accepts "HH:mm" or "HH:mm:ss". */
@@ -289,9 +322,27 @@ function normalizeResponse(body: unknown, plan: TripPlan): ItineraryResult {
         : [];
 
   const city = asString(root.destination, plan.destinationDetails.destination);
-  const days = daysRaw
+  const parsedDays = daysRaw
     .map((d: unknown, i: number) => normalizeDay(d, i, city))
     .filter((d: ItineraryDay | null): d is ItineraryDay => d !== null);
+
+  // One itinerary day per calendar day, start date through end date inclusive:
+  // index days onto the user's actual date range so the result always matches
+  // the selected trip duration, never a fixed count.
+  const { startDate, endDate } = plan.destinationDetails;
+  const spanDays =
+    startDate && endDate && endDate >= startDate
+      ? Math.round(
+          (new Date(`${endDate}T00:00:00`).getTime() -
+            new Date(`${startDate}T00:00:00`).getTime()) /
+            86_400_000,
+        ) + 1
+      : parsedDays.length;
+  const days = parsedDays.slice(0, spanDays).map((day: ItineraryDay, i: number) => ({
+    ...day,
+    dayNumber: i + 1,
+    date: startDate ? addDaysIso(startDate, i) : day.date,
+  }));
 
   const totalStops = (days as ItineraryDay[]).reduce(
     (s: number, d: ItineraryDay) =>

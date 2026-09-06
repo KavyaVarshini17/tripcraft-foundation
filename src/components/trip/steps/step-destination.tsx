@@ -1,7 +1,7 @@
 import { Input } from "@/components/ui/input";
 import { Field, StepHeading } from "@/components/trip/field";
 import { useTripPlan } from "@/lib/trip/trip-plan-context";
-import type { StepErrors } from "@/lib/trip/validation";
+import { todayIsoDate, type StepErrors } from "@/lib/trip/validation";
 
 export function StepDestination({ errors }: { errors: StepErrors }) {
   const { plan, updateSection } = useTripPlan();
@@ -36,6 +36,7 @@ export function StepDestination({ errors }: { errors: StepErrors }) {
           <Input
             id="startDate"
             type="date"
+            min={todayIsoDate()}
             value={d.startDate}
             onChange={(e) => updateSection("destinationDetails", { startDate: e.target.value })}
           />
