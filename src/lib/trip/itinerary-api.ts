@@ -7,6 +7,7 @@
  */
 
 import type { TripPlan, InterestTag } from "./types";
+import { todayIsoDate } from "./validation";
 import type {
   GeneratedItinerary,
   ItineraryDay,
@@ -55,6 +56,29 @@ export function buildPayload(plan: TripPlan): GenerateItineraryPayload {
 }
 
 export async function generateItineraryRemote(plan: TripPlan): Promise<ItineraryResult> {
+  const d = plan.destinationDetails;
+  if (!d.startDate || !d.endDate) {
+    return {
+      ok: false,
+      reason: "Your travel dates are missing.",
+      details: ["Pick a start and end date in the planner, then try again."],
+    };
+  }
+  if (d.endDate < d.startDate) {
+    return {
+      ok: false,
+      reason: "Your travel dates are invalid.",
+      details: ["The end date must be on or after the start date. Fix the dates in the planner and try again."],
+    };
+  }
+  if (d.startDate < todayIsoDate()) {
+    return {
+      ok: false,
+      reason: "Your start date is in the past.",
+      details: ["Choose today or a future start date in the planner, then try again."],
+    };
+  }
+
   let response: Response;
   try {
     response = await fetch(ENDPOINT, {
