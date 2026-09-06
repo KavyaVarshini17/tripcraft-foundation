@@ -19,6 +19,14 @@ export interface StepErrors {
   mealPreferences?: string;
 }
 
+/** Today's date as ISO yyyy-mm-dd (local). */
+export function todayIsoDate(): string {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(
+    now.getDate(),
+  ).padStart(2, "0")}`;
+}
+
 /** Validates a single planner step (0-indexed). Pure, UI-free. */
 export function validateStep(step: number, plan: TripPlan): StepErrors {
   const errors: StepErrors = {};
@@ -29,6 +37,8 @@ export function validateStep(step: number, plan: TripPlan): StepErrors {
     if (!d.startingLocation.trim()) errors.startingLocation = "Where are you starting from?";
     if (!d.startDate) errors.startDate = "Pick a start date.";
     if (!d.endDate) errors.endDate = "Pick an end date.";
+    if (d.startDate && d.startDate < todayIsoDate())
+      errors.startDate = "Start date can't be in the past.";
     if (d.startDate && d.endDate && d.endDate < d.startDate)
       errors.endDate = "End date must be on or after the start date.";
   }
