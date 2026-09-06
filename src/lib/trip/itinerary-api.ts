@@ -166,6 +166,15 @@ const asCategories = (value: unknown): InterestTag[] => {
   return matched.length > 0 ? matched : ["culture"];
 };
 
+/** Adds `count` calendar days to an ISO yyyy-mm-dd date. */
+const addDaysIso = (iso: string, count: number): string => {
+  const d = new Date(`${iso}T00:00:00`);
+  d.setDate(d.getDate() + count);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
+    d.getDate(),
+  ).padStart(2, "0")}`;
+};
+
 /** Accepts "HH:mm" or "HH:mm:ss". */
 const asTime = (value: unknown, fallback: string): string => {
   const s = asString(value);
