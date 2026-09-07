@@ -1,6 +1,11 @@
 import { Field, OptionChip, StepHeading } from "@/components/trip/field";
 import { useTripPlan } from "@/lib/trip/trip-plan-context";
-import { PACE_OPTIONS, TRANSPORT_OPTIONS, type TransportMode } from "@/lib/trip/types";
+import {
+  INTERCITY_TRANSPORT_OPTIONS,
+  PACE_OPTIONS,
+  TRANSPORT_OPTIONS,
+  type TransportMode,
+} from "@/lib/trip/types";
 import type { StepErrors } from "@/lib/trip/validation";
 
 export function StepStyle({ errors }: { errors: StepErrors }) {
@@ -35,7 +40,26 @@ export function StepStyle({ errors }: { errors: StepErrors }) {
         </div>
       </Field>
 
-      <Field label="Transportation" error={errors.transport}>
+      <Field label="Getting to your destination">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          {INTERCITY_TRANSPORT_OPTIONS.map((option) => (
+            <OptionChip
+              key={option.value}
+              label={option.label}
+              hint={option.hint}
+              selected={style.intercityTransport === option.value}
+              onClick={() =>
+                updateSection("travelStyle", {
+                  intercityTransport:
+                    style.intercityTransport === option.value ? "" : option.value,
+                })
+              }
+            />
+          ))}
+        </div>
+      </Field>
+
+      <Field label="Getting around locally" error={errors.transport}>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
           {TRANSPORT_OPTIONS.map((option) => (
             <OptionChip

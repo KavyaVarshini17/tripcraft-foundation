@@ -34,14 +34,42 @@ export interface GenerateItineraryPayload {
   preferred_start_time: string;
   preferred_end_time: string;
   must_visit: string[];
+  /** How the traveller reaches the destination: road | train | bus | flight. */
+  travel_mode: string;
+  /** Only true for road journeys: allow relevant, verified stops en route. */
+  include_enroute_stops: boolean;
+  /** Plain-language journey context for the generation logic. */
+  journey_context: string;
 }
+
+const INTERCITY_LABEL: Record<string, string> = {
+  road: "road trip by car",
+  train: "train",
+  bus: "bus",
+  flight: "flight",
+};
 
 export function buildPayload(plan: TripPlan): GenerateItineraryPayload {
   const d = plan.destinationDetails;
   const t = plan.travelersAndBudget;
+  const origin = (d.startingLocation || "").trim();
+  const mode = plan.travelStyle.intercityTransport || "";
+  const byRoad = mode === "road";
+  const modeLabel = INTERCITY_LABEL[mode] ?? "";
+
+  const journeyContext = origin
+    ? modeLabel
+      ? `Traveling from ${origin} to ${d.destination} by ${modeLabel}.${
+          byRoad
+            ? " Day 1 may include worthwhile verified attractions along the route from the starting location, only when they are relevant and do not make the journey inefficient. Never repeat a place."
+            : " The traveller arrives directly in the destination city, so do not add stops between the two cities."
+        }`
+      : `Traveling from ${origin} to ${d.destination}.`
+    : "";
+
   return {
     destination: d.destination,
-    starting_location: d.startingLocation,
+    starting_location: origin,
     start_date: d.startDate,
     end_date: d.endDate,
     travelers: t.travelers,
@@ -52,6 +80,9 @@ export function buildPayload(plan: TripPlan): GenerateItineraryPayload {
     preferred_start_time: plan.dailyPreferences.startTime,
     preferred_end_time: plan.dailyPreferences.endTime,
     must_visit: plan.mustVisit.places.map((p) => p.name),
+    travel_mode: mode,
+    include_enroute_stops: byRoad,
+    journey_context: journeyContext,
   };
 }
 
@@ -410,6 +441,24 @@ function rebalanceSparseDays(days: ItineraryDay[], plan: TripPlan): ItineraryDay
   return balanced.map(recalculateDay);
 }
 
+/**
+ * A road journey can legitimately surface en-route stops, so guard against the
+ * same verified place appearing twice across the trip.
+ */
+function dedupePlaces(days: ItineraryDay[]): ItineraryDay[] {
+  const seen = new Set<string>();
+  return days.map((day) => ({
+    ...day,
+    items: day.items.filter((item) => {
+      if (item.kind !== "place") return true;
+      const key = (item.place.id || item.place.name).toLowerCase().trim();
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    }),
+  }));
+}
+
 function normalizeResponse(body: unknown, plan: TripPlan): ItineraryResult {
   const root = asRecord(body);
   if (!root) {
@@ -452,7 +501,29 @@ function normalizeResponse(body: unknown, plan: TripPlan): ItineraryResult {
     dayNumber: i + 1,
     date: startDate ? addDaysIso(startDate, i) : day.date,
   }));
-  const days = rebalanceSparseDays(alignedDays, plan);
+  const balancedDays = rebalanceSparseDays(dedupePlaces(alignedDays), plan);
+
+  // Anchor the trip to the traveller's real starting point and arrival mode.
+  const origin = (plan.destinationDetails.startingLocation || "").trim();
+  const arrivalMode = plan.travelStyle.intercityTransport || "";
+  const days: ItineraryDay[] = origin
+    ? balancedDays.map((day, i) =>
+        i === 0
+          ? {
+              ...day,
+              startLocation: origin,
+              items: day.items.map((item, index) =>
+                index === 0 && item.kind === "place"
+                  ? {
+                      ...item,
+                      travelFromPrevious: { ...item.travelFromPrevious, fromLabel: origin },
+                    }
+                  : item,
+              ),
+            }
+          : day,
+      )
+    : balancedDays;
 
   const totalStops = (days as ItineraryDay[]).reduce(
     (s: number, d: ItineraryDay) =>
@@ -488,10 +559,9 @@ function normalizeResponse(body: unknown, plan: TripPlan): ItineraryResult {
 
   const itinerary: GeneratedItinerary = {
     destination: city,
-    startingLocation: asString(
-      root.starting_location ?? root.startingLocation,
-      plan.destinationDetails.startingLocation,
-    ),
+    startingLocation:
+      origin ||
+      asString(root.starting_location ?? root.startingLocation, ""),
     days,
     totalCostInr: asNumber(
       root.total_estimated_cost ?? root.total_cost_inr ?? root.total_cost,
@@ -503,7 +573,16 @@ function normalizeResponse(body: unknown, plan: TripPlan): ItineraryResult {
     ),
     travelers: asNumber(root.travelers, plan.travelersAndBudget.travelers),
     unscheduled,
-    warnings: asStringArray(root.warnings),
+    warnings: [
+      ...asStringArray(root.warnings),
+      ...(origin && arrivalMode
+        ? [
+            arrivalMode === "road"
+              ? `Planned as a road trip from ${origin} to ${city} — only relevant, verified stops along the route are considered.`
+              : `Planned for arrival in ${city} from ${origin} by ${INTERCITY_LABEL[arrivalMode] ?? arrivalMode}.`,
+          ]
+        : []),
+    ],
   };
 
   return { ok: true, itinerary };
