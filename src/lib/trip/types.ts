@@ -65,9 +65,14 @@ export interface TravelersAndBudget {
   budgetFlexibility: BudgetFlexibility | "";
 }
 
+/** How the traveller reaches the destination city (inter-city journey). */
+export type IntercityTransportMode = "road" | "train" | "bus" | "flight";
+
 export interface TravelStyle {
   pace: TravelPace | "";
   transport: TransportMode[];
+  /** Optional — existing plans saved before this field remain valid. */
+  intercityTransport?: IntercityTransportMode | "";
 }
 
 export interface DailyPreferences {
@@ -107,7 +112,7 @@ export const createEmptyTripPlan = (): TripPlan => ({
     budgetFlexibility: "",
   },
   interests: [],
-  travelStyle: { pace: "", transport: [] },
+  travelStyle: { pace: "", transport: [], intercityTransport: "" },
   dailyPreferences: {
     startTime: "09:00",
     endTime: "21:00",
@@ -180,6 +185,17 @@ export const TRANSPORT_OPTIONS: { value: TransportMode; label: string }[] = [
   { value: "own_vehicle", label: "Own Vehicle" },
   { value: "rental_two_wheeler", label: "Rental Two-Wheeler" },
   { value: "combination", label: "Combination" },
+];
+
+export const INTERCITY_TRANSPORT_OPTIONS: {
+  value: IntercityTransportMode;
+  label: string;
+  hint: string;
+}[] = [
+  { value: "road", label: "Road / Car", hint: "Stops along the way are considered" },
+  { value: "train", label: "Train", hint: "Arrive by rail" },
+  { value: "bus", label: "Bus", hint: "Arrive by coach" },
+  { value: "flight", label: "Flight", hint: "Arrive by air" },
 ];
 
 export const MEAL_OPTIONS: { value: MealPreference; label: string }[] = [
