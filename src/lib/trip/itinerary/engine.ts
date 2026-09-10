@@ -299,6 +299,7 @@ export function generateItinerary(plan: TripPlan, options: GenerateOptions = {})
         endTime: toHHMM(arrival + place.recommendedDurationMinutes),
         durationMinutes: place.recommendedDurationMinutes,
         costInr: cost,
+        entryFeeKnown: true,
         travelFromPrevious: leg,
       };
       items.push(stop);
