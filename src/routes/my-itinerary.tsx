@@ -410,6 +410,94 @@ function Detail({
   );
 }
 
+function EmergencyAssistance({ destination }: { destination: string }) {
+  const hospitalQuery = encodeURIComponent(`hospitals near ${destination}`);
+  const actions = [
+    {
+      icon: <Siren className="size-4" />,
+      label: "Ambulance",
+      sub: "Call 108",
+      href: "tel:108",
+      accent: "bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300",
+    },
+    {
+      icon: <Shield className="size-4" />,
+      label: "Police",
+      sub: "Call 112",
+      href: "tel:112",
+      accent: "bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300",
+    },
+    {
+      icon: <Flame className="size-4" />,
+      label: "Fire & Rescue",
+      sub: "Call 112",
+      href: "tel:112",
+      accent: "bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300",
+    },
+    {
+      icon: <Hospital className="size-4" />,
+      label: "Nearby Hospitals",
+      sub: "Open Google Maps",
+      href: `https://www.google.com/maps/search/?api=1&query=${hospitalQuery}`,
+      accent: "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300",
+      external: true,
+    },
+  ];
+
+  return (
+    <section className="mt-8 rounded-3xl border border-border bg-card p-6 shadow-soft sm:p-8">
+      <div className="flex items-center gap-2">
+        <span className="flex size-9 items-center justify-center rounded-2xl bg-rose-100 text-rose-700 dark:bg-rose-950/50 dark:text-rose-300">
+          <AlertTriangle className="size-4" />
+        </span>
+        <h2 className="font-display text-lg tracking-tight text-foreground">
+          Emergency Assistance
+        </h2>
+      </div>
+      <p className="mt-2 text-sm text-muted-foreground">
+        Quick access to essential services while you travel. Tap to call or find nearby help.
+      </p>
+      <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
+        {actions.map((action) => {
+          const isExternal = action.external ?? false;
+          const className =
+            "group flex flex-col items-start gap-2 rounded-2xl border border-border bg-background p-4 transition-colors hover:bg-secondary";
+          return isExternal ? (
+            <a
+              key={action.label}
+              href={action.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={className}
+            >
+              <span
+                className={`flex size-8 items-center justify-center rounded-xl ${action.accent}`}
+              >
+                {action.icon}
+              </span>
+              <span className="text-sm font-semibold text-foreground">{action.label}</span>
+              <span className="text-xs text-muted-foreground">{action.sub}</span>
+            </a>
+          ) : (
+            <a key={action.label} href={action.href} className={className}>
+              <span
+                className={`flex size-8 items-center justify-center rounded-xl ${action.accent}`}
+              >
+                {action.icon}
+              </span>
+              <span className="text-sm font-semibold text-foreground">{action.label}</span>
+              <span className="flex items-center gap-1 text-xs font-medium text-primary">
+                <Phone className="size-3" />
+                {action.sub}
+              </span>
+            </a>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
 function StatCard({
   icon,
   label,
