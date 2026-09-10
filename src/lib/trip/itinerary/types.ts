@@ -16,6 +16,8 @@ export interface ItineraryStop {
   durationMinutes: number;
   /** Entry cost for the whole party, INR. */
   costInr: number;
+  /** Whether the entry fee was known (vs. unavailable). */
+  entryFeeKnown: boolean;
   travelFromPrevious: TravelLeg;
 }
 
