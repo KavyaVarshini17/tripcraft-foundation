@@ -357,7 +357,11 @@ function TimelineRow({ item, isLast }: { item: ItineraryItem; isLast: boolean })
                 {minutesLabel(item.durationMinutes)}
               </Detail>
               <Detail icon={<Coins className="size-3.5" />} label="Entry">
-                {item.costInr === 0 ? "Free" : inr(item.costInr)}
+                {item.entryFeeKnown
+                  ? item.costInr === 0
+                    ? "Free"
+                    : inr(item.costInr)
+                  : "Fee unavailable"}
               </Detail>
               <Detail icon={<RouteIcon className="size-3.5" />} label="Distance">
                 {item.travelFromPrevious.distanceKm} km

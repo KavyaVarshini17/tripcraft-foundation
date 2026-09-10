@@ -294,6 +294,7 @@ function normalizeItem(
       r.entry_fee !== undefined
         ? Number(r.entry_fee)
         : 0,
+    entryFeeKnown: r.entry_fee_known === true,
     travelFromPrevious: travel,
   };
 }
