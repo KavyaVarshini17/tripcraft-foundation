@@ -288,7 +288,12 @@ function normalizeItem(
     startTime,
     endTime,
     durationMinutes: duration || place.recommendedDurationMinutes,
-    costInr: asNumber(r.cost_inr ?? r.entry_fee ?? r.cost, place.estimatedEntryCostInr),
+    costInr:
+      r.entry_fee_known === true &&
+      r.entry_fee !== null &&
+      r.entry_fee !== undefined
+        ? Number(r.entry_fee)
+        : 0,
     travelFromPrevious: travel,
   };
 }
