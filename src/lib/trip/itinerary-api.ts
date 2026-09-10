@@ -399,6 +399,12 @@ function recalculateDay(day: ItineraryDay): ItineraryDay {
  * their service-provided times, opening-hours checks and travel data remain
  * unchanged.
  */
+const matchesInterests = (item: ItineraryItem, interests: string[]): boolean => {
+  if (item.kind !== "place" || interests.length === 0) return false;
+  const wanted = new Set(interests.map((i) => i.toLowerCase().trim()));
+  return (item.place.categories ?? []).some((c) => wanted.has(String(c).toLowerCase().trim()));
+};
+
 function rebalanceSparseDays(days: ItineraryDay[], plan: TripPlan): ItineraryDay[] {
   const emptyIndexes = days
     .map((day, index) => (placeCount(day) === 0 ? index : -1))
@@ -410,6 +416,7 @@ function rebalanceSparseDays(days: ItineraryDay[], plan: TripPlan): ItineraryDay
   );
   if (placeIds.length < days.length || new Set(placeIds).size !== placeIds.length) return days;
 
+  const interests = plan.interests ?? [];
   const balanced = days.map((day) => ({ ...day, items: day.items.slice() }));
 
   for (const targetIndex of emptyIndexes) {
@@ -422,19 +429,33 @@ function rebalanceSparseDays(days: ItineraryDay[], plan: TripPlan): ItineraryDay
       .sort((a, b) => b.count - a.count || a.index - b.index);
 
     let moved = false;
-    for (const donor of donors) {
-      const source = balanced[donor.index];
-      if (!source) continue;
+    // Two passes: fill the empty day with an interest-matching place first, and
+    // only fall back to a non-matching place when no matching one can move.
+    for (const preferMatching of [true, false]) {
+      for (const donor of donors) {
+        const source = balanced[donor.index];
+        if (!source) continue;
 
-      for (let itemIndex = source.items.length - 1; itemIndex >= 0; itemIndex -= 1) {
-        const candidate = source.items[itemIndex];
-        if (!candidate || candidate.kind !== "place") continue;
-        if (!itemFitsDay(candidate, target.items, plan)) continue;
+        const donorMatching = source.items.filter((i) => matchesInterests(i, interests)).length;
 
-        source.items.splice(itemIndex, 1);
-        target.items.push(candidate);
-        moved = true;
-        break;
+        for (let itemIndex = source.items.length - 1; itemIndex >= 0; itemIndex -= 1) {
+          const candidate = source.items[itemIndex];
+          if (!candidate || candidate.kind !== "place") continue;
+          const candidateMatches = matchesInterests(candidate, interests);
+          if (candidateMatches !== preferMatching) continue;
+          // Never strip a donor day of its last personalized stop just to fill
+          // another day with it — matching places are not displaced by fallback.
+          if (candidateMatches && donorMatching <= 1 && source.items.some((i) => !matchesInterests(i, interests) && i.kind === "place")) {
+            continue;
+          }
+          if (!itemFitsDay(candidate, target.items, plan)) continue;
+
+          source.items.splice(itemIndex, 1);
+          target.items.push(candidate);
+          moved = true;
+          break;
+        }
+        if (moved) break;
       }
       if (moved) break;
     }
@@ -446,6 +467,7 @@ function rebalanceSparseDays(days: ItineraryDay[], plan: TripPlan): ItineraryDay
 
   return balanced.map(recalculateDay);
 }
+
 
 /**
  * A road journey can legitimately surface en-route stops, so guard against the
