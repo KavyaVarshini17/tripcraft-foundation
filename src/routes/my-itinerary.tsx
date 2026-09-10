@@ -218,6 +218,8 @@ function ItineraryView(props: {
         </section>
       ) : null}
 
+      <EmergencyAssistance destination={itinerary.destination} />
+
       <div className="mt-8 flex flex-wrap gap-3">
         <Link
           to="/planner"
