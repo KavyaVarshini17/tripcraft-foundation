@@ -36,6 +36,18 @@ export interface GenerateItineraryPayload {
   include_enroute_stops: boolean;
   /** Plain-language journey context for the generation logic. */
   journey_context: string;
+  /** UI language for generated user-facing text only: en | te | hi. */
+  language: SupportedLanguage;
+}
+
+export type SupportedLanguage = "en" | "te" | "hi";
+
+const SUPPORTED_LANGUAGES: SupportedLanguage[] = ["en", "te", "hi"];
+
+function normalizeLanguage(language?: string): SupportedLanguage {
+  return SUPPORTED_LANGUAGES.includes(language as SupportedLanguage)
+    ? (language as SupportedLanguage)
+    : "en";
 }
 
 const INTERCITY_LABEL: Record<string, string> = {
@@ -45,7 +57,7 @@ const INTERCITY_LABEL: Record<string, string> = {
   flight: "flight",
 };
 
-export function buildPayload(plan: TripPlan): GenerateItineraryPayload {
+export function buildPayload(plan: TripPlan, language?: string): GenerateItineraryPayload {
   const d = plan.destinationDetails;
   const t = plan.travelersAndBudget;
   const origin = (d.startingLocation || "").trim();
@@ -79,10 +91,14 @@ export function buildPayload(plan: TripPlan): GenerateItineraryPayload {
     travel_mode: mode,
     include_enroute_stops: byRoad,
     journey_context: journeyContext,
+    language: normalizeLanguage(language),
   };
 }
 
-export async function generateItineraryRemote(plan: TripPlan): Promise<ItineraryResult> {
+export async function generateItineraryRemote(
+  plan: TripPlan,
+  language?: string,
+): Promise<ItineraryResult> {
   const d = plan.destinationDetails;
   if (!d.startDate || !d.endDate) {
     return {
@@ -111,7 +127,7 @@ export async function generateItineraryRemote(plan: TripPlan): Promise<Itinerary
     response = await fetch(ENDPOINT, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(buildPayload(plan)),
+      body: JSON.stringify(buildPayload(plan, language)),
     });
   } catch {
     return {
