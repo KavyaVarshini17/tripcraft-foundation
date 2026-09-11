@@ -8,6 +8,7 @@
 
 import type { TripPlan, InterestTag } from "./types";
 import { todayIsoDate } from "./validation";
+import { placeMatchesInterests } from "./interests";
 import type {
   GeneratedItinerary,
   ItineraryDay,
