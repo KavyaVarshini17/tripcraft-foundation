@@ -47,3 +47,26 @@ export function translateTravelMode(t: Translate, mode: string): string {
   if (isKnownKey(key)) return t(key);
   return mode.toLowerCase();
 }
+
+/**
+ * Translates only recognised English UI wrappers around a place name
+ * (e.g. "On the Way: X"). The place name itself is never translated.
+ */
+export function translatePlaceName(t: Translate, name: string): string {
+  const match = /^\s*on the way\s*[:\-–]\s*(.+)$/i.exec(name);
+  if (match) return t("place.onTheWay", { name: match[1]!.trim() });
+  return name;
+}
+
+const KNOWN_NOTES: Array<[RegExp, TranslationKey]> = [
+  [/personalized en-?route stop selected by tripcraft/i, "note.enrouteStop"],
+];
+
+/** Translates recognised backend explanatory notes; unknown notes pass through. */
+export function translateNote(t: Translate, note: string): string {
+  if (note.startsWith("@")) return translateDynamic(t, note);
+  for (const [pattern, key] of KNOWN_NOTES) {
+    if (pattern.test(note)) return t(key);
+  }
+  return note;
+}

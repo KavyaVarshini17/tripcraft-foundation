@@ -19,7 +19,13 @@ import {
 
 import { SiteHeader } from "@/components/trip/site-header";
 import { useI18n, type Translate } from "@/lib/i18n/i18n-context";
-import { translateCategory, translateDynamic, translateTravelMode } from "@/lib/i18n/dynamic";
+import {
+  translateCategory,
+  translateDynamic,
+  translateNote,
+  translatePlaceName,
+  translateTravelMode,
+} from "@/lib/i18n/dynamic";
 import { useTripPlan } from "@/lib/trip/trip-plan-context";
 import { loadGeneratedResult } from "@/lib/trip/itinerary-api";
 import type { GeneratedItinerary, ItineraryDay, ItineraryItem } from "@/lib/trip/itinerary/types";
@@ -211,7 +217,7 @@ function ItineraryView(props: { itinerary: GeneratedItinerary; interests: string
           <ul className="mt-3 space-y-3 text-sm">
             {itinerary.unscheduled.map((item) => (
               <li key={item.name}>
-                <span className="font-medium text-foreground">{item.name}</span>
+                <span className="font-medium text-foreground">{translatePlaceName(t, item.name)}</span>
                 <span className="block text-muted-foreground">{translateDynamic(t, item.reason)}</span>
               </li>
             ))}
@@ -338,7 +344,7 @@ function TimelineRow({ item, isLast }: { item: ItineraryItem; isLast: boolean })
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
                 <div className="flex items-center gap-2 flex-wrap">
-                  <h3 className="font-display text-lg tracking-tight text-foreground">{item.place.name}</h3>
+                  <h3 className="font-display text-lg tracking-tight text-foreground">{translatePlaceName(t, item.place.name)}</h3>
 
                   {item.isMustVisit && (
                     <span className="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary">
@@ -399,7 +405,7 @@ function TimelineRow({ item, isLast }: { item: ItineraryItem; isLast: boolean })
               {item.place.openingTime && item.place.closingTime
                 ? `${item.place.openingTime} – ${item.place.closingTime}`
                 : t("itin.hoursUnavailable")}
-              {item.place.note ? ` · ${item.place.note}` : ""}
+              {item.place.note ? ` · ${translateNote(t, item.place.note)}` : ""}
             </p>
           </div>
         )}
