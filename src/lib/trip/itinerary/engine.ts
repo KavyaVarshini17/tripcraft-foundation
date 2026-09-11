@@ -10,6 +10,7 @@
 import { localPlacesProvider, resolveDestinationCity } from "../places/provider";
 import type { PlaceRecord, PlacesProvider } from "../places/types";
 import type { TransportMode, TripPlan } from "../types";
+import { interestMatchCount, placeMatchesInterests } from "../interests";
 import type {
   GeneratedItinerary,
   ItineraryDay,
@@ -197,19 +198,24 @@ export function generateItinerary(plan: TripPlan, options: GenerateOptions = {})
       });
   }
 
-  const interests = new Set(plan.interests);
+  // Priority: selected interests first, then must-visits, then everything else.
+  // Generic bonuses must never let an unselected category outrank a place that
+  // actually matches a selected interest.
+  const INTEREST_PRIORITY = 100_000;
+  const MUST_VISIT_PRIORITY = 10_000;
   const score = (p: PlaceRecord) => {
     let s = 0;
-    if (mustVisitIds.has(p.id)) s += 1000;
-    s += p.categories.filter((c) => interests.has(c)).length * 40;
+    const matches = interestMatchCount(p, plan.interests);
+    if (matches > 0) s += INTEREST_PRIORITY + matches * 40;
+    if (mustVisitIds.has(p.id)) s += MUST_VISIT_PRIORITY;
     if (p.estimatedEntryCostInr === 0) s += 5;
     return s;
   };
 
-  // Candidates: must-visits always; otherwise interest matches, falling back to
-  // the full pool when interests match nothing.
+  // Candidates: must-visits always; otherwise interest matches (alias-aware),
+  // falling back to the full pool when interests match nothing.
   const interestMatches = pool.filter(
-    (p) => mustVisitIds.has(p.id) || p.categories.some((c) => interests.has(c)),
+    (p) => mustVisitIds.has(p.id) || placeMatchesInterests(p, plan.interests),
   );
   const candidates = (interestMatches.length > 0 ? interestMatches : pool)
     .slice()
@@ -220,6 +226,7 @@ export function generateItinerary(plan: TripPlan, options: GenerateOptions = {})
       `No place in the ${city} dataset matches your selected interests, so the plan uses the city's main verified sights instead.`,
     );
   }
+
 
   const base = centroid(pool);
   const remaining = new Map(candidates.map((p) => [p.id, p] as const));
