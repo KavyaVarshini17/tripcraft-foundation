@@ -7,6 +7,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Field, OptionChip, StepHeading } from "@/components/trip/field";
+import { useI18n } from "@/lib/i18n/i18n-context";
 import { useTripPlan } from "@/lib/trip/trip-plan-context";
 import {
   AGE_GROUP_OPTIONS,
@@ -22,40 +23,38 @@ import type { StepErrors } from "@/lib/trip/validation";
 
 export function StepTravelers({ errors }: { errors: StepErrors }) {
   const { plan, updateSection } = useTripPlan();
-  const t = plan.travelersAndBudget;
+  const { t } = useI18n();
+  const traveler = plan.travelersAndBudget;
 
   const toggleAgeGroup = (value: AgeGroup) => {
-    const ageGroups = (t.ageGroups ?? []).includes(value)
-      ? (t.ageGroups ?? []).filter((g) => g !== value)
-      : [...(t.ageGroups ?? []), value];
+    const ageGroups = (traveler.ageGroups ?? []).includes(value)
+      ? (traveler.ageGroups ?? []).filter((g) => g !== value)
+      : [...(traveler.ageGroups ?? []), value];
     updateSection("travelersAndBudget", { ageGroups });
   };
 
   return (
     <div className="space-y-7">
-      <StepHeading
-        title="Who's coming along?"
-        description="This shapes pacing, pricing and the kind of experiences we suggest."
-      />
+      <StepHeading title={t("step2.title")} description={t("step2.desc")} />
 
       <div className="grid gap-5 sm:grid-cols-2">
-        <Field label="Number of travelers" htmlFor="travelers" error={errors.travelers}>
+        <Field label={t("field.travelers")} htmlFor="travelers" error={errors.travelers}>
           <Input
             id="travelers"
             type="number"
             min={1}
-            value={t.travelers}
+            value={traveler.travelers}
             onChange={(e) =>
               updateSection("travelersAndBudget", { travelers: Number(e.target.value) })
             }
           />
         </Field>
-        <Field label="Currency" error={errors.currency}>
+        <Field label={t("field.currency")} error={errors.currency}>
           <Select
-            value={t.currency}
+            value={traveler.currency}
             onValueChange={(currency) => updateSection("travelersAndBudget", { currency })}
           >
-            <SelectTrigger aria-label="Currency">
+            <SelectTrigger aria-label={t("field.currency")}>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -69,13 +68,13 @@ export function StepTravelers({ errors }: { errors: StepErrors }) {
         </Field>
       </div>
 
-      <Field label="Traveling with" error={errors.companionType}>
+      <Field label={t("field.travelingWith")} error={errors.companionType}>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
           {COMPANION_OPTIONS.map((option) => (
             <OptionChip
               key={option.value}
-              label={option.label}
-              selected={t.companionType === option.value}
+              label={t(`companion.${option.value}`)}
+              selected={traveler.companionType === option.value}
               onClick={() =>
                 updateSection("travelersAndBudget", {
                   companionType: option.value as CompanionType,
@@ -86,13 +85,13 @@ export function StepTravelers({ errors }: { errors: StepErrors }) {
         </div>
       </Field>
 
-      <Field label="Age group" error={errors.ageGroups} hint="Select all that apply.">
+      <Field label={t("field.ageGroup")} error={errors.ageGroups} hint={t("hint.selectAll")}>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
           {AGE_GROUP_OPTIONS.map((option) => (
             <OptionChip
               key={option.value}
-              label={option.label}
-              selected={(t.ageGroups ?? []).includes(option.value)}
+              label={t(`age.${option.value}`)}
+              selected={(traveler.ageGroups ?? []).includes(option.value)}
               onClick={() => toggleAgeGroup(option.value)}
             />
           ))}
@@ -100,21 +99,21 @@ export function StepTravelers({ errors }: { errors: StepErrors }) {
       </Field>
 
       <Field
-        label="Total trip budget"
+        label={t("field.totalBudget")}
         htmlFor="totalBudget"
         error={errors.totalBudget}
-        hint="This is the total budget for the entire trip."
+        hint={t("hint.totalBudget")}
       >
         <div className="relative">
           <span className="pointer-events-none absolute inset-y-0 left-4 flex items-center text-sm font-medium text-muted-foreground">
-            {CURRENCY_SYMBOLS[t.currency] ?? t.currency}
+            {CURRENCY_SYMBOLS[traveler.currency] ?? traveler.currency}
           </span>
           <Input
             id="totalBudget"
             inputMode="numeric"
             placeholder="50000"
             className="pl-10"
-            value={t.totalBudget}
+            value={traveler.totalBudget}
             onChange={(e) =>
               updateSection("travelersAndBudget", {
                 totalBudget: e.target.value.replace(/[^\d.]/g, ""),
@@ -124,14 +123,14 @@ export function StepTravelers({ errors }: { errors: StepErrors }) {
         </div>
       </Field>
 
-      <Field label="Budget flexibility" error={errors.budgetFlexibility}>
+      <Field label={t("field.budgetFlexibility")} error={errors.budgetFlexibility}>
         <div className="grid gap-3 sm:grid-cols-2">
           {BUDGET_FLEXIBILITY_OPTIONS.map((option) => (
             <OptionChip
               key={option.value}
-              label={option.label}
-              hint={option.hint}
-              selected={t.budgetFlexibility === option.value}
+              label={t(`flex.${option.value}`)}
+              hint={t(`flex.${option.value}.hint`)}
+              selected={traveler.budgetFlexibility === option.value}
               onClick={() =>
                 updateSection("travelersAndBudget", {
                   budgetFlexibility: option.value as BudgetFlexibility,

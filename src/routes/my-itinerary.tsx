@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 
 import { SiteHeader } from "@/components/trip/site-header";
+import { useI18n, type Translate } from "@/lib/i18n/i18n-context";
 import { useTripPlan } from "@/lib/trip/trip-plan-context";
 import { loadGeneratedResult } from "@/lib/trip/itinerary-api";
 import type { GeneratedItinerary, ItineraryDay, ItineraryItem } from "@/lib/trip/itinerary/types";
@@ -47,15 +48,16 @@ export const Route = createFileRoute("/my-itinerary")({
 
 const inr = (value: number) => `₹${Math.round(value).toLocaleString("en-IN")}`;
 
-const minutesLabel = (minutes: number) => {
+const minutesLabel = (minutes: number, t: Translate) => {
   const h = Math.floor(minutes / 60);
   const m = Math.round(minutes % 60);
-  if (h === 0) return `${m} min`;
-  return m === 0 ? `${h} hr` : `${h} hr ${m} min`;
+  if (h === 0) return t("units.min", { count: m });
+  return m === 0 ? t("units.hr", { count: h }) : t("units.hrMin", { hours: h, minutes: m });
 };
 
 function MyItineraryPage() {
   const { plan, hydrated } = useTripPlan();
+  const { t } = useI18n();
   const [result, setResult] = useState<ItineraryResult | null | undefined>(undefined);
 
   useEffect(() => {
@@ -75,16 +77,17 @@ function MyItineraryPage() {
             <span className="mx-auto flex size-12 items-center justify-center rounded-2xl bg-secondary text-primary">
               <Sparkles className="size-5" />
             </span>
-            <h1 className="mt-5 font-display text-2xl tracking-tight text-foreground">No itinerary generated yet</h1>
+            <h1 className="mt-5 font-display text-2xl tracking-tight text-foreground">
+              {t("itin.noneTitle")}
+            </h1>
             <p className="mx-auto mt-2 max-w-md text-sm text-muted-foreground">
-              Head to your trip summary and tap "Generate My Itinerary" to build a day-by-day plan from verified real
-              places.
+              {t("itin.noneBody")}
             </p>
             <Link
               to="/itinerary"
               className="mt-7 inline-flex items-center rounded-full border border-input px-6 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
             >
-              Go to trip summary
+              {t("itin.goSummary")}
             </Link>
           </section>
         ) : !result.ok ? (
@@ -103,20 +106,22 @@ function MyItineraryPage() {
                 to="/itinerary"
                 className="inline-flex items-center rounded-full bg-primary px-6 py-2.5 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
               >
-                Try again
+                {t("itin.tryAgain")}
               </Link>
               <Link
                 to="/planner"
                 className="inline-flex items-center rounded-full border border-input px-6 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
               >
-                Adjust trip details
+                {t("itin.adjust")}
               </Link>
             </div>
           </section>
         ) : (
           <ItineraryView
             itinerary={result.itinerary}
-            interests={INTEREST_OPTIONS.filter((i) => plan.interests.includes(i.value)).map((i) => i.label)}
+            interests={INTEREST_OPTIONS.filter((i) => plan.interests.includes(i.value)).map((i) =>
+              t(`interest.${i.value}`),
+            )}
           />
         )}
       </main>
@@ -126,43 +131,54 @@ function MyItineraryPage() {
 
 function ItineraryView(props: { itinerary: GeneratedItinerary; interests: string[] }) {
   const { itinerary, interests } = props;
+  const { t } = useI18n();
 
   const totalStops = itinerary.days.reduce((sum, day) => sum + day.items.filter((i) => i.kind === "place").length, 0);
   const totalTravelMinutes = itinerary.days.reduce((s, day) => s + day.totalTravelMinutes, 0);
+  const dayCount = itinerary.days.length;
 
   return (
     <>
       <header className="rounded-3xl bg-primary px-7 py-10 text-primary-foreground shadow-lift sm:px-10">
-        <p className="text-xs font-semibold uppercase tracking-widest text-primary-foreground/70">Your itinerary</p>
+        <p className="text-xs font-semibold uppercase tracking-widest text-primary-foreground/70">
+          {t("itin.eyebrow")}
+        </p>
         <h1 className="mt-2 font-display text-3xl tracking-tight sm:text-5xl">{itinerary.destination}</h1>
         <p className="mt-3 text-sm text-primary-foreground/80">
-          {itinerary.days.length} day{itinerary.days.length > 1 ? "s" : ""} · {totalStops} stops · {itinerary.travelers}{" "}
-          traveler{itinerary.travelers > 1 ? "s" : ""}
-          {itinerary.startingLocation ? ` · from ${itinerary.startingLocation}` : ""}
+          {dayCount > 1 ? t("itin.daysCount", { count: dayCount }) : t("itin.dayCount", { count: dayCount })} ·{" "}
+          {t("itin.stops", { count: totalStops })} ·{" "}
+          {itinerary.travelers > 1
+            ? t("itin.travelersCount", { count: itinerary.travelers })
+            : t("itin.travelerCount", { count: itinerary.travelers })}
+          {itinerary.startingLocation
+            ? ` · ${t("itin.fromLocation", { location: itinerary.startingLocation })}`
+            : ""}
         </p>
         {interests.length > 0 ? (
-          <p className="mt-2 text-xs text-primary-foreground/70">Built around: {interests.join(" · ")}</p>
+          <p className="mt-2 text-xs text-primary-foreground/70">
+            {t("itin.builtAround", { interests: interests.join(" · ") })}
+          </p>
         ) : null}
       </header>
 
       <section className="mt-6 grid gap-4 sm:grid-cols-3">
         <StatCard
           icon={<Coins className="size-4" />}
-          label="Estimated trip cost"
+          label={t("itin.statCost")}
           value={inr(itinerary.totalCostInr)}
-          hint="Entries + meals, all travelers"
+          hint={t("itin.statCostHint")}
         />
         <StatCard
           icon={<RouteIcon className="size-4" />}
-          label="Estimated distance"
+          label={t("itin.statDistance")}
           value={`${itinerary.totalDistanceKm} km`}
-          hint="Across all days"
+          hint={t("itin.statDistanceHint")}
         />
         <StatCard
           icon={<Timer className="size-4" />}
-          label="Time in transit"
-          value={minutesLabel(totalTravelMinutes)}
-          hint="Includes travel buffers"
+          label={t("itin.statTransit")}
+          value={minutesLabel(totalTravelMinutes, t)}
+          hint={t("itin.statTransitHint")}
         />
       </section>
 
@@ -170,7 +186,7 @@ function ItineraryView(props: { itinerary: GeneratedItinerary; interests: string
         <section className="mt-6 rounded-3xl border border-border bg-secondary/60 p-6">
           <h2 className="flex items-center gap-2 text-sm font-semibold text-foreground">
             <AlertTriangle className="size-4" />
-            Worth knowing
+            {t("itin.warningsTitle")}
           </h2>
           <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
             {itinerary.warnings.map((w) => (
@@ -188,7 +204,7 @@ function ItineraryView(props: { itinerary: GeneratedItinerary; interests: string
 
       {itinerary.unscheduled.length > 0 ? (
         <section className="mt-8 rounded-3xl border border-dashed border-border bg-card p-6 shadow-soft">
-          <h2 className="text-sm font-semibold text-foreground">Not scheduled — and why</h2>
+          <h2 className="text-sm font-semibold text-foreground">{t("itin.unscheduledTitle")}</h2>
           <ul className="mt-3 space-y-3 text-sm">
             {itinerary.unscheduled.map((item) => (
               <li key={item.name}>
@@ -207,13 +223,13 @@ function ItineraryView(props: { itinerary: GeneratedItinerary; interests: string
           to="/planner"
           className="inline-flex items-center rounded-full border border-input px-6 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
         >
-          Edit trip details
+          {t("itin.editDetails")}
         </Link>
         <Link
           to="/itinerary"
           className="inline-flex items-center rounded-full border border-input px-6 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-secondary"
         >
-          Back to trip summary
+          {t("itin.backSummary")}
         </Link>
       </div>
     </>
@@ -221,29 +237,34 @@ function ItineraryView(props: { itinerary: GeneratedItinerary; interests: string
 }
 
 function DayCard({ day }: { day: ItineraryDay }) {
+  const { t, language } = useI18n();
   const stops = day.items.filter((i) => i.kind === "place");
 
   return (
     <section className="rounded-3xl border border-border bg-card p-6 shadow-soft sm:p-8">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-widest text-primary">Day {day.dayNumber}</p>
-          <h2 className="mt-1 font-display text-2xl tracking-tight text-foreground">{formatDate(day.date)}</h2>
+          <p className="text-xs font-semibold uppercase tracking-widest text-primary">
+            {t("itin.day", { number: day.dayNumber })}
+          </p>
+          <h2 className="mt-1 font-display text-2xl tracking-tight text-foreground">
+            {formatDate(day.date, language)}
+          </h2>
           <p className="mt-1 text-xs text-muted-foreground">
-            Starts at {day.startLocation} · ends at {day.endLocation}
+            {t("itin.startsEnds", { start: day.startLocation, end: day.endLocation })}
           </p>
         </div>
         <div className="text-right text-xs text-muted-foreground">
           <p className="text-sm font-semibold text-foreground">{inr(day.totalCostInr)}</p>
           <p>
-            {day.totalDistanceKm} km · {minutesLabel(day.totalTravelMinutes)} travel
+            {day.totalDistanceKm} km · {minutesLabel(day.totalTravelMinutes, t)} {t("itin.travel")}
           </p>
         </div>
       </div>
 
       {day.items.length === 0 ? (
         <p className="mt-6 rounded-2xl border border-dashed border-border px-4 py-6 text-center text-sm text-muted-foreground">
-          {day.notes[0] ?? "No verified place fits this day's constraints."}
+          {day.notes[0] ?? t("itin.emptyDay")}
         </p>
       ) : (
         <ol className="mt-6 space-y-0">
@@ -257,8 +278,12 @@ function DayCard({ day }: { day: ItineraryDay }) {
         <div className="mt-5 flex items-start gap-3 rounded-2xl bg-secondary/60 px-4 py-3 text-xs text-muted-foreground">
           <Navigation className="mt-0.5 size-3.5 shrink-0" />
           <span>
-            Return to {day.endLocation} — {day.returnLeg.distanceKm} km · {minutesLabel(day.returnLeg.travelMinutes)} by{" "}
-            {day.returnLeg.mode.toLowerCase()}.
+            {t("itin.returnLeg", {
+              place: day.endLocation,
+              km: day.returnLeg.distanceKm,
+              time: minutesLabel(day.returnLeg.travelMinutes, t),
+              mode: day.returnLeg.mode.toLowerCase(),
+            })}
           </span>
         </div>
       ) : null}
@@ -275,6 +300,8 @@ function DayCard({ day }: { day: ItineraryDay }) {
 }
 
 function TimelineRow({ item, isLast }: { item: ItineraryItem; isLast: boolean }) {
+  const { t } = useI18n();
+
   return (
     <li className="relative flex gap-4 pb-6 last:pb-0">
       <div className="flex flex-col items-center">
@@ -300,7 +327,7 @@ function TimelineRow({ item, isLast }: { item: ItineraryItem; isLast: boolean })
               {item.label}
             </span>
             <span className="text-xs text-muted-foreground">
-              {minutesLabel(item.durationMinutes)} · approx. {inr(item.costInr)}
+              {minutesLabel(item.durationMinutes, t)} · {inr(item.costInr)}
             </span>
           </div>
         ) : (
@@ -312,7 +339,7 @@ function TimelineRow({ item, isLast }: { item: ItineraryItem; isLast: boolean })
 
                   {item.isMustVisit && (
                     <span className="inline-flex items-center rounded-full bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary">
-                      ⭐ Must Visit
+                      ⭐ {t("itin.mustVisit")}
                     </span>
                   )}
                 </div>
@@ -328,7 +355,7 @@ function TimelineRow({ item, isLast }: { item: ItineraryItem; isLast: boolean })
                 className="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground transition-opacity hover:opacity-90"
               >
                 <Navigation className="size-3.5" />
-                Get Directions
+                {t("itin.getDirections")}
               </a>
             </div>
 
@@ -344,25 +371,29 @@ function TimelineRow({ item, isLast }: { item: ItineraryItem; isLast: boolean })
             </ul>
 
             <dl className="mt-4 grid grid-cols-2 gap-3 text-xs sm:grid-cols-4">
-              <Detail icon={<Clock className="size-3.5" />} label="Visit">
-                {minutesLabel(item.durationMinutes)}
+              <Detail icon={<Clock className="size-3.5" />} label={t("itin.detail.visit")}>
+                {minutesLabel(item.durationMinutes, t)}
               </Detail>
-              <Detail icon={<Coins className="size-3.5" />} label="Entry">
-                {item.entryFeeKnown ? (item.costInr === 0 ? "Free" : inr(item.costInr)) : "Fee unavailable"}
+              <Detail icon={<Coins className="size-3.5" />} label={t("itin.detail.entry")}>
+                {item.entryFeeKnown
+                  ? item.costInr === 0
+                    ? t("itin.free")
+                    : inr(item.costInr)
+                  : t("itin.feeUnavailable")}
               </Detail>
-              <Detail icon={<RouteIcon className="size-3.5" />} label="Distance">
-                {item.travelFromPrevious.distanceKm} km
+              <Detail icon={<RouteIcon className="size-3.5" />} label={t("itin.detail.distance")}>
+                {item.travelFromPrevious?.distanceKm ?? 0} km
               </Detail>
-              <Detail icon={<Timer className="size-3.5" />} label="Travel">
-                {minutesLabel(item.travelFromPrevious.travelMinutes)}
+              <Detail icon={<Timer className="size-3.5" />} label={t("itin.detail.travel")}>
+                {minutesLabel(item.travelFromPrevious?.travelMinutes ?? 0, t)}
               </Detail>
             </dl>
 
             <p className="mt-3 text-[0.7rem] text-muted-foreground">
-              {item.travelFromPrevious.label} from{" "}
+              {item.travelFromPrevious?.fromLabel ? `${item.travelFromPrevious.fromLabel} · ` : ""}
               {item.place.openingTime && item.place.closingTime
                 ? `${item.place.openingTime} – ${item.place.closingTime}`
-                : "Hours unavailable"}
+                : t("itin.hoursUnavailable")}
               {item.place.note ? ` · ${item.place.note}` : ""}
             </p>
           </div>
@@ -385,33 +416,34 @@ function Detail({ icon, label, children }: { icon: React.ReactNode; label: strin
 }
 
 function EmergencyAssistance({ destination }: { destination: string }) {
+  const { t } = useI18n();
   const hospitalQuery = encodeURIComponent(`hospitals near ${destination}`);
   const actions = [
     {
       icon: <Siren className="size-4" />,
-      label: "Ambulance",
-      sub: "Call 108",
+      label: t("emergency.ambulance"),
+      sub: t("emergency.call", { number: "108" }),
       href: "tel:108",
       accent: "bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300",
     },
     {
       icon: <Shield className="size-4" />,
-      label: "Police",
-      sub: "Call 112",
+      label: t("emergency.police"),
+      sub: t("emergency.call", { number: "112" }),
       href: "tel:112",
       accent: "bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300",
     },
     {
       icon: <Flame className="size-4" />,
-      label: "Fire & Rescue",
-      sub: "Call 112",
+      label: t("emergency.fire"),
+      sub: t("emergency.call", { number: "112" }),
       href: "tel:112",
       accent: "bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300",
     },
     {
       icon: <Hospital className="size-4" />,
-      label: "Nearby Hospitals",
-      sub: "Open Google Maps",
+      label: t("emergency.hospitals"),
+      sub: t("emergency.openMaps"),
       href: `https://www.google.com/maps/search/?api=1&query=${hospitalQuery}`,
       accent: "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300",
       external: true,
@@ -424,11 +456,9 @@ function EmergencyAssistance({ destination }: { destination: string }) {
         <span className="flex size-9 items-center justify-center rounded-2xl bg-rose-100 text-rose-700 dark:bg-rose-950/50 dark:text-rose-300">
           <AlertTriangle className="size-4" />
         </span>
-        <h2 className="font-display text-lg tracking-tight text-foreground">Emergency Assistance</h2>
+        <h2 className="font-display text-lg tracking-tight text-foreground">{t("emergency.title")}</h2>
       </div>
-      <p className="mt-2 text-sm text-muted-foreground">
-        Quick access to essential services while you travel. Tap to call or find nearby help.
-      </p>
+      <p className="mt-2 text-sm text-muted-foreground">{t("emergency.body")}</p>
       <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
         {actions.map((action) => {
           const isExternal = action.external ?? false;
