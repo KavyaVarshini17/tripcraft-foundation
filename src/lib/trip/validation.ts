@@ -1,23 +1,30 @@
+import type { TranslationKey } from "@/lib/i18n/translations";
+
 import type { TripPlan } from "./types";
 
-export interface StepErrors {
-  destination?: string;
-  startingLocation?: string;
-  startDate?: string;
-  endDate?: string;
-  travelers?: string;
-  companionType?: string;
-  ageGroups?: string;
-  totalBudget?: string;
-  currency?: string;
-  budgetFlexibility?: string;
-  interests?: string;
-  pace?: string;
-  transport?: string;
-  startTime?: string;
-  endTime?: string;
-  mealPreferences?: string;
-}
+export type StepErrorField =
+  | "destination"
+  | "startingLocation"
+  | "startDate"
+  | "endDate"
+  | "travelers"
+  | "companionType"
+  | "ageGroups"
+  | "totalBudget"
+  | "currency"
+  | "budgetFlexibility"
+  | "interests"
+  | "pace"
+  | "transport"
+  | "startTime"
+  | "endTime"
+  | "mealPreferences";
+
+/** Errors ready for display (already translated). */
+export type StepErrors = Partial<Record<StepErrorField, string>>;
+
+/** Errors as translation keys — UI-free, translated at render time. */
+export type StepErrorKeys = Partial<Record<StepErrorField, TranslationKey>>;
 
 /** Today's date as ISO yyyy-mm-dd (local). */
 export function todayIsoDate(): string {
@@ -28,50 +35,49 @@ export function todayIsoDate(): string {
 }
 
 /** Validates a single planner step (0-indexed). Pure, UI-free. */
-export function validateStep(step: number, plan: TripPlan): StepErrors {
-  const errors: StepErrors = {};
+export function validateStep(step: number, plan: TripPlan): StepErrorKeys {
+  const errors: StepErrorKeys = {};
 
   if (step === 0) {
     const d = plan.destinationDetails;
-    if (!d.destination.trim()) errors.destination = "Where are you going?";
-    if (!d.startingLocation.trim()) errors.startingLocation = "Where are you starting from?";
-    if (!d.startDate) errors.startDate = "Pick a start date.";
-    if (!d.endDate) errors.endDate = "Pick an end date.";
+    if (!d.destination.trim()) errors.destination = "validation.destination";
+    if (!d.startingLocation.trim()) errors.startingLocation = "validation.startingLocation";
+    if (!d.startDate) errors.startDate = "validation.startDate";
+    if (!d.endDate) errors.endDate = "validation.endDate";
     if (d.startDate && d.startDate < todayIsoDate())
-      errors.startDate = "Start date can't be in the past.";
+      errors.startDate = "validation.startDatePast";
     if (d.startDate && d.endDate && d.endDate < d.startDate)
-      errors.endDate = "End date must be on or after the start date.";
+      errors.endDate = "validation.endDateOrder";
   }
 
   if (step === 1) {
     const t = plan.travelersAndBudget;
-    if (!t.travelers || t.travelers < 1) errors.travelers = "At least one traveler.";
-    if (!t.companionType) errors.companionType = "Select who you're traveling with.";
-    if (t.ageGroups.length === 0) errors.ageGroups = "Pick at least one age group.";
+    if (!t.travelers || t.travelers < 1) errors.travelers = "validation.travelers";
+    if (!t.companionType) errors.companionType = "validation.companionType";
+    if ((t.ageGroups ?? []).length === 0) errors.ageGroups = "validation.ageGroups";
     const budget = Number(t.totalBudget);
     if (!t.totalBudget.trim() || Number.isNaN(budget) || budget <= 0)
-      errors.totalBudget = "Enter a valid total budget.";
-    if (!t.currency) errors.currency = "Select a currency.";
-    if (!t.budgetFlexibility) errors.budgetFlexibility = "Choose a budget flexibility.";
+      errors.totalBudget = "validation.totalBudget";
+    if (!t.currency) errors.currency = "validation.currency";
+    if (!t.budgetFlexibility) errors.budgetFlexibility = "validation.budgetFlexibility";
   }
 
   if (step === 2 && plan.interests.length === 0) {
-    errors.interests = "Pick at least one interest.";
+    errors.interests = "validation.interests";
   }
 
   if (step === 3) {
-    if (!plan.travelStyle.pace) errors.pace = "Choose a travel pace.";
-    if (plan.travelStyle.transport.length === 0)
-      errors.transport = "Select at least one way to get around.";
+    if (!plan.travelStyle.pace) errors.pace = "validation.pace";
+    if (plan.travelStyle.transport.length === 0) errors.transport = "validation.transport";
   }
 
   if (step === 4) {
     const p = plan.dailyPreferences;
-    if (!p.startTime) errors.startTime = "Set a preferred start time.";
-    if (!p.endTime) errors.endTime = "Set a preferred end time.";
+    if (!p.startTime) errors.startTime = "validation.startTime";
+    if (!p.endTime) errors.endTime = "validation.endTime";
     if (p.startTime && p.endTime && p.endTime <= p.startTime)
-      errors.endTime = "End time must be after start time.";
-    if (p.mealPreferences.length === 0) errors.mealPreferences = "Pick at least one meal preference.";
+      errors.endTime = "validation.endTimeOrder";
+    if (p.mealPreferences.length === 0) errors.mealPreferences = "validation.mealPreferences";
   }
 
   return errors;
@@ -86,9 +92,9 @@ export function tripDurationDays(startDate: string, endDate: string): number | n
   return diff < 0 ? null : diff + 1;
 }
 
-export function formatDate(iso: string): string {
+export function formatDate(iso: string, locale?: string): string {
   if (!iso) return "—";
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return iso;
-  return d.toLocaleDateString(undefined, { day: "numeric", month: "short", year: "numeric" });
+  return d.toLocaleDateString(locale, { day: "numeric", month: "short", year: "numeric" });
 }
