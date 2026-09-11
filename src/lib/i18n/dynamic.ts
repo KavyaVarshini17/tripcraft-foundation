@@ -39,3 +39,11 @@ export function translateCategory(t: Translate, category: string): string {
   if (isKnownKey(key)) return t(key);
   return category.replace(/_/g, " ");
 }
+
+/** Translates a routing mode label (TRANSFER, DRIVING, ...) for display. */
+export function translateTravelMode(t: Translate, mode: string): string {
+  const slug = mode.trim().toLowerCase().replace(/[\s-]+/g, "_");
+  const key = `travelmode.${slug}`;
+  if (isKnownKey(key)) return t(key);
+  return mode.toLowerCase();
+}

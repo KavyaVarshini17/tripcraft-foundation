@@ -19,7 +19,7 @@ import {
 
 import { SiteHeader } from "@/components/trip/site-header";
 import { useI18n, type Translate } from "@/lib/i18n/i18n-context";
-import { translateCategory, translateDynamic } from "@/lib/i18n/dynamic";
+import { translateCategory, translateDynamic, translateTravelMode } from "@/lib/i18n/dynamic";
 import { useTripPlan } from "@/lib/trip/trip-plan-context";
 import { loadGeneratedResult } from "@/lib/trip/itinerary-api";
 import type { GeneratedItinerary, ItineraryDay, ItineraryItem } from "@/lib/trip/itinerary/types";
@@ -285,7 +285,7 @@ function DayCard({ day }: { day: ItineraryDay }) {
               place: day.endLocation,
               km: day.returnLeg.distanceKm,
               time: minutesLabel(day.returnLeg.travelMinutes, t),
-              mode: day.returnLeg.mode.toLowerCase(),
+              mode: translateTravelMode(t, day.returnLeg.mode),
             })}
           </span>
         </div>

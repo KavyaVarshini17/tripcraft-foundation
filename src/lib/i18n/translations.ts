@@ -331,6 +331,13 @@ export const en = {
   "category.amusement": "Amusement",
   "category.on_the_way": "On the Way",
   "category.enroute": "On the Way",
+
+  "travelmode.transfer": "transfer",
+  "travelmode.driving": "car",
+  "travelmode.walking": "walking",
+  "travelmode.transit": "public transport",
+  "travelmode.taxi": "taxi",
+  "travelmode.return": "transfer",
 } as const;
 
 
@@ -655,6 +662,13 @@ export const hi: Dictionary = {
   "category.amusement": "मनोरंजन पार्क",
   "category.on_the_way": "रास्ते में",
   "category.enroute": "रास्ते में",
+
+  "travelmode.transfer": "यात्रा",
+  "travelmode.driving": "कार",
+  "travelmode.walking": "पैदल",
+  "travelmode.transit": "सार्वजनिक परिवहन",
+  "travelmode.taxi": "टैक्सी",
+  "travelmode.return": "यात्रा",
 };
 
 
@@ -975,6 +989,13 @@ export const te: Dictionary = {
   "category.amusement": "వినోద పార్క్",
   "category.on_the_way": "మార్గంలో",
   "category.enroute": "మార్గంలో",
+
+  "travelmode.transfer": "ప్రయాణం",
+  "travelmode.driving": "కారు",
+  "travelmode.walking": "నడక",
+  "travelmode.transit": "ప్రజా రవాణా",
+  "travelmode.taxi": "టాక్సీ",
+  "travelmode.return": "ప్రయాణం",
 };
 
 
