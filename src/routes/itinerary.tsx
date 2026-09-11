@@ -43,7 +43,7 @@ function ItineraryPage() {
     if (generating) return;
     setGenerating(true);
     setGenerateError(null);
-    const result = await generateItineraryRemote(plan);
+    const result = await generateItineraryRemote(plan, language);
     saveGeneratedResult(result);
     setGenerating(false);
     if (result.ok) {
