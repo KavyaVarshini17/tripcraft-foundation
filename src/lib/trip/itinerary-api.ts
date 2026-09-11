@@ -9,6 +9,7 @@
 import type { TripPlan, InterestTag } from "./types";
 import { todayIsoDate } from "./validation";
 import { placeMatchesInterests } from "./interests";
+import { dynKey } from "../i18n/dynamic";
 import type { GeneratedItinerary, ItineraryDay, ItineraryItem, ItineraryResult, TravelLeg } from "./itinerary/types";
 import type { PlaceRecord } from "./places/types";
 
@@ -86,22 +87,22 @@ export async function generateItineraryRemote(plan: TripPlan): Promise<Itinerary
   if (!d.startDate || !d.endDate) {
     return {
       ok: false,
-      reason: "Your travel dates are missing.",
-      details: ["Pick a start and end date in the planner, then try again."],
+      reason: dynKey("dyn.datesMissing"),
+      details: [dynKey("dyn.datesMissingBody")],
     };
   }
   if (d.endDate < d.startDate) {
     return {
       ok: false,
-      reason: "Your travel dates are invalid.",
-      details: ["The end date must be on or after the start date. Fix the dates in the planner and try again."],
+      reason: dynKey("dyn.datesInvalid"),
+      details: [dynKey("dyn.datesInvalidBody")],
     };
   }
   if (d.startDate < todayIsoDate()) {
     return {
       ok: false,
-      reason: "Your start date is in the past.",
-      details: ["Choose today or a future start date in the planner, then try again."],
+      reason: dynKey("dyn.datesPast"),
+      details: [dynKey("dyn.datesPastBody")],
     };
   }
 
@@ -115,10 +116,10 @@ export async function generateItineraryRemote(plan: TripPlan): Promise<Itinerary
   } catch {
     return {
       ok: false,
-      reason: "We couldn't reach the itinerary service",
+      reason: dynKey("dyn.unreachable"),
       details: [
-        "Check your internet connection and try again.",
-        "If the problem continues, the itinerary service may be temporarily unavailable.",
+        dynKey("dyn.unreachableBody1"),
+        dynKey("dyn.unreachableBody2"),
       ],
     };
   }
@@ -134,10 +135,10 @@ export async function generateItineraryRemote(plan: TripPlan): Promise<Itinerary
     const err = asRecord(body);
     return {
       ok: false,
-      reason: "Itinerary generation failed",
+      reason: dynKey("dyn.failed"),
       details: [
         asString(err?.error, `The service responded with status ${response.status}.`),
-        asString(err?.details) || "Please adjust your trip details or try again in a moment.",
+        asString(err?.details) || dynKey("dyn.failedBody"),
       ].filter(Boolean),
     };
   }
@@ -252,7 +253,7 @@ function normalizeItem(raw: unknown, index: number, dayIndex: number, city: stri
     return {
       kind: "break",
       id,
-      label: asString(r.name ?? r.label, "Meal break"),
+      label: asString(r.name ?? r.label, dynKey("dyn.mealBreak")),
       startTime,
       endTime,
       durationMinutes: duration,
@@ -263,7 +264,7 @@ function normalizeItem(raw: unknown, index: number, dayIndex: number, city: stri
   const place = normalizePlace(r, index, city);
   if (!place) return null;
   const travel: TravelLeg = {
-    fromLabel: asString(r.previous_place ?? r.from, "Previous stop"),
+    fromLabel: asString(r.previous_place ?? r.from, dynKey("dyn.previousStop")),
     distanceKm: asNumber(r.distance_from_previous_km ?? r.distance_km, 0),
     travelMinutes: asNumber(r.travel_time_from_previous_minutes ?? r.travel_minutes, 0),
     mode: asString(r.mode, "TRANSFER"),
@@ -476,8 +477,8 @@ function normalizeResponse(body: unknown, plan: TripPlan): ItineraryResult {
   if (!root) {
     return {
       ok: false,
-      reason: "No itinerary came back from the service",
-      details: ["The service returned an empty response. Please try again."],
+      reason: dynKey("dyn.emptyResponse"),
+      details: [dynKey("dyn.emptyResponseBody")],
     };
   }
 
@@ -548,12 +549,12 @@ function normalizeResponse(body: unknown, plan: TripPlan): ItineraryResult {
   if (days.length === 0 || totalStops === 0) {
     return {
       ok: false,
-      reason: "No verified places available for this trip",
+      reason: dynKey("dyn.noPlaces"),
       details: [
         asString(root.message) ||
           asString(root.error) ||
-          "The service couldn't find verified real places matching your destination, dates and preferences.",
-        "Try a different destination, wider interests, or a longer trip.",
+          dynKey("dyn.noPlacesBody1"),
+        dynKey("dyn.noPlacesBody2"),
       ],
     };
   }
@@ -564,7 +565,7 @@ function normalizeResponse(body: unknown, plan: TripPlan): ItineraryResult {
       const r = asRecord(u);
       if (!r) return null;
       const name = asString(r.name);
-      return name ? { name, reason: asString(r.reason, "Could not be scheduled.") } : null;
+      return name ? { name, reason: asString(r.reason, dynKey("dyn.unscheduled")) } : null;
     })
     .filter((u: { name: string; reason: string } | null): u is { name: string; reason: string } => u !== null);
 
@@ -587,8 +588,18 @@ function normalizeResponse(body: unknown, plan: TripPlan): ItineraryResult {
       ...(origin && arrivalMode
         ? [
             arrivalMode === "road"
-              ? `Planned as a road trip from ${origin} to ${city} — only relevant, verified stops along the route are considered.`
-              : `Planned for arrival in ${city} from ${origin} by ${INTERCITY_LABEL[arrivalMode] ?? arrivalMode}.`,
+              ? dynKey("dyn.roadTrip", { origin, city })
+              : dynKey("dyn.arrival", {
+                  origin,
+                  city,
+                  mode: dynKey(
+                    arrivalMode === "train"
+                      ? "mode.train"
+                      : arrivalMode === "bus"
+                        ? "mode.bus"
+                        : "mode.flight",
+                  ),
+                }),
           ]
         : []),
     ],

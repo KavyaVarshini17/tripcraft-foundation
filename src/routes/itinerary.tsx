@@ -5,6 +5,7 @@ import { AlertTriangle, CalendarRange, Loader2, MapPin, Sparkles, Users, Wallet 
 import { Button } from "@/components/ui/button";
 import { SiteHeader } from "@/components/trip/site-header";
 import { useI18n } from "@/lib/i18n/i18n-context";
+import { translateDynamic } from "@/lib/i18n/dynamic";
 import { useTripPlan } from "@/lib/trip/trip-plan-context";
 import { generateItineraryRemote, saveGeneratedResult } from "@/lib/trip/itinerary-api";
 import { INTEREST_OPTIONS } from "@/lib/trip/types";
@@ -162,11 +163,11 @@ function ItineraryPage() {
                 <div className="mx-auto mt-5 max-w-md rounded-2xl border border-destructive/30 bg-destructive/5 p-4 text-left">
                   <p className="flex items-center gap-2 text-sm font-semibold text-foreground">
                     <AlertTriangle className="size-4 text-destructive" />
-                    {generateError.reason}
+                    {translateDynamic(t, generateError.reason)}
                   </p>
                   <ul className="mt-2 space-y-1 text-xs text-muted-foreground">
                     {generateError.details.map((detail) => (
-                      <li key={detail}>{detail}</li>
+                      <li key={detail}>{translateDynamic(t, detail)}</li>
                     ))}
                   </ul>
                 </div>
