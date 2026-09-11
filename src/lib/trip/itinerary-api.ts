@@ -9,13 +9,7 @@
 import type { TripPlan, InterestTag } from "./types";
 import { todayIsoDate } from "./validation";
 import { placeMatchesInterests } from "./interests";
-import type {
-  GeneratedItinerary,
-  ItineraryDay,
-  ItineraryItem,
-  ItineraryResult,
-  TravelLeg,
-} from "./itinerary/types";
+import type { GeneratedItinerary, ItineraryDay, ItineraryItem, ItineraryResult, TravelLeg } from "./itinerary/types";
 import type { PlaceRecord } from "./places/types";
 
 const ENDPOINT = "https://razzdhjvordllglpwtxn.supabase.co/functions/v1/generate-itinerary";
@@ -190,11 +184,14 @@ const KNOWN_INTERESTS: InterestTag[] = [
 const asCategories = (value: unknown): InterestTag[] => {
   const raw = Array.isArray(value) ? value : value != null ? [value] : [];
   const normalized = raw
-    .map((v) => asString(v).toLowerCase().trim().replace(/[\s-]+/g, "_"))
+    .map((v) =>
+      asString(v)
+        .toLowerCase()
+        .trim()
+        .replace(/[\s-]+/g, "_"),
+    )
     .filter(Boolean);
-  const matched = normalized.filter((c): c is InterestTag =>
-    KNOWN_INTERESTS.includes(c as InterestTag),
-  );
+  const matched = normalized.filter((c): c is InterestTag => KNOWN_INTERESTS.includes(c as InterestTag));
   return matched.length > 0 ? matched : ["culture"];
 };
 
@@ -202,13 +199,11 @@ const asCategories = (value: unknown): InterestTag[] => {
 const addDaysIso = (iso: string, count: number): string => {
   const d = new Date(`${iso}T00:00:00`);
   d.setDate(d.getDate() + count);
-  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(
-    d.getDate(),
-  ).padStart(2, "0")}`;
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 };
 
 /** Accepts "HH:mm" or "HH:mm:ss". */
-const asTime = (value: unknown, fallback: string): string => {
+const asTime = (value: unknown, fallback = ""): string => {
   const s = asString(value);
   return /^\d{1,2}:\d{2}/.test(s) ? s.slice(0, 5).padStart(5, "0") : fallback;
 };
@@ -223,8 +218,7 @@ function normalizePlace(raw: AnyRecord, index: number, city: string): PlaceRecor
     (Number.isFinite(lat) && Number.isFinite(lng)
       ? `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`
       : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`${name} ${city}`)}`);
-  const noteValue =
-    raw.description != null || raw.note != null ? asString(raw.note ?? raw.description) : null;
+  const noteValue = raw.description != null || raw.note != null ? asString(raw.note ?? raw.description) : null;
   return {
     id: asString(raw.place_id ?? raw.id, `api-place-${index}`),
     name,
@@ -233,8 +227,8 @@ function normalizePlace(raw: AnyRecord, index: number, city: string): PlaceRecor
     latitude: Number.isFinite(lat) ? lat : 0,
     longitude: Number.isFinite(lng) ? lng : 0,
     categories: asCategories(raw.category ?? raw.categories),
-    openingTime: asTime(raw.opening_time ?? raw.openingTime ?? raw.opens, "09:00"),
-    closingTime: asTime(raw.closing_time ?? raw.closingTime ?? raw.closes, "18:00"),
+    openingTime: asTime(raw.opening_time ?? raw.openingTime ?? raw.opens, ""),
+    closingTime: asTime(raw.closing_time ?? raw.closingTime ?? raw.closes, ""),
     recommendedDurationMinutes: asNumber(
       raw.visit_duration_minutes ?? raw.recommended_duration_minutes ?? raw.duration,
       90,
@@ -245,12 +239,7 @@ function normalizePlace(raw: AnyRecord, index: number, city: string): PlaceRecor
   };
 }
 
-function normalizeItem(
-  raw: unknown,
-  index: number,
-  dayIndex: number,
-  city: string,
-): ItineraryItem | null {
+function normalizeItem(raw: unknown, index: number, dayIndex: number, city: string): ItineraryItem | null {
   const r = asRecord(raw);
   if (!r) return null;
   const kind = asString(r.type ?? r.kind).toLowerCase();
@@ -276,10 +265,7 @@ function normalizeItem(
   const travel: TravelLeg = {
     fromLabel: asString(r.previous_place ?? r.from, "Previous stop"),
     distanceKm: asNumber(r.distance_from_previous_km ?? r.distance_km, 0),
-    travelMinutes: asNumber(
-      r.travel_time_from_previous_minutes ?? r.travel_minutes,
-      0,
-    ),
+    travelMinutes: asNumber(r.travel_time_from_previous_minutes ?? r.travel_minutes, 0),
     mode: asString(r.mode, "TRANSFER"),
   };
   return {
@@ -289,13 +275,12 @@ function normalizeItem(
     startTime,
     endTime,
     durationMinutes: duration || place.recommendedDurationMinutes,
-    costInr:
-      r.entry_fee_known === true &&
-      r.entry_fee !== null &&
-      r.entry_fee !== undefined
-        ? Number(r.entry_fee)
-        : 0,
+    costInr: r.entry_fee_known === true && r.entry_fee !== null && r.entry_fee !== undefined ? Number(r.entry_fee) : 0,
     entryFeeKnown: r.entry_fee_known === true,
+
+    // Preserve backend Must Visit priority in the frontend.
+    isMustVisit: r.is_must_visit === true,
+
     travelFromPrevious: travel,
   };
 }
@@ -333,7 +318,10 @@ function normalizeDay(raw: unknown, index: number, city: string): ItineraryDay |
     totalDistanceKm: asNumber(r.estimated_distance_km ?? r.total_distance_km ?? r.total_distance, 0),
     totalTravelMinutes: asNumber(
       r.total_travel_minutes,
-      items.reduce((s: number, i: ItineraryItem) => s + (i.kind === "place" ? i.travelFromPrevious.travelMinutes : 0), 0),
+      items.reduce(
+        (s: number, i: ItineraryItem) => s + (i.kind === "place" ? i.travelFromPrevious.travelMinutes : 0),
+        0,
+      ),
     ),
     notes: asStringArray(r.notes),
   };
@@ -344,26 +332,26 @@ const minutesFromTime = (time: string): number => {
   return Number(hours) * 60 + Number(minutes);
 };
 
-const placeCount = (day: ItineraryDay): number =>
-  day.items.filter((item) => item.kind === "place").length;
+const placeCount = (day: ItineraryDay): number => day.items.filter((item) => item.kind === "place").length;
 
-function itemFitsDay(
-  item: ItineraryItem,
-  existingItems: ItineraryItem[],
-  plan: TripPlan,
-): boolean {
+function itemFitsDay(item: ItineraryItem, existingItems: ItineraryItem[], plan: TripPlan): boolean {
   const start = minutesFromTime(item.startTime);
   const end = minutesFromTime(item.endTime);
   const preferredStart = minutesFromTime(plan.dailyPreferences.startTime || "00:00");
   const preferredEnd = minutesFromTime(plan.dailyPreferences.endTime || "23:59");
 
   if (start < preferredStart || end > preferredEnd || end <= start) return false;
-  if (
-    item.kind === "place" &&
-    (start < minutesFromTime(item.place.openingTime) ||
-      end > minutesFromTime(item.place.closingTime))
-  ) {
-    return false;
+  if (item.kind === "place") {
+    const openingKnown = Boolean(item.place.openingTime);
+    const closingKnown = Boolean(item.place.closingTime);
+
+    if (openingKnown && start < minutesFromTime(item.place.openingTime)) {
+      return false;
+    }
+
+    if (closingKnown && end > minutesFromTime(item.place.closingTime)) {
+      return false;
+    }
   }
 
   return existingItems.every((existing) => {
@@ -380,10 +368,7 @@ function recalculateDay(day: ItineraryDay): ItineraryDay {
     totalCostInr: day.items.reduce((sum, item) => sum + item.costInr, 0),
     totalDistanceKm:
       Math.round(
-        day.items.reduce(
-          (sum, item) => sum + (item.kind === "place" ? item.travelFromPrevious.distanceKm : 0),
-          0,
-        ) * 10,
+        day.items.reduce((sum, item) => sum + (item.kind === "place" ? item.travelFromPrevious.distanceKm : 0), 0) * 10,
       ) / 10,
     totalTravelMinutes: day.items.reduce(
       (sum, item) => sum + (item.kind === "place" ? item.travelFromPrevious.travelMinutes : 0),
@@ -404,9 +389,7 @@ const matchesInterests = (item: ItineraryItem, interests: string[]): boolean =>
   item.kind === "place" && placeMatchesInterests(item.place, interests);
 
 function rebalanceSparseDays(days: ItineraryDay[], plan: TripPlan): ItineraryDay[] {
-  const emptyIndexes = days
-    .map((day, index) => (placeCount(day) === 0 ? index : -1))
-    .filter((index) => index >= 0);
+  const emptyIndexes = days.map((day, index) => (placeCount(day) === 0 ? index : -1)).filter((index) => index >= 0);
   if (emptyIndexes.length === 0) return days;
 
   const placeIds = days.flatMap((day) =>
@@ -443,7 +426,11 @@ function rebalanceSparseDays(days: ItineraryDay[], plan: TripPlan): ItineraryDay
           if (candidateMatches !== preferMatching) continue;
           // Never strip a donor day of its last personalized stop just to fill
           // another day with it — matching places are not displaced by fallback.
-          if (candidateMatches && donorMatching <= 1 && source.items.some((i) => !matchesInterests(i, interests) && i.kind === "place")) {
+          if (
+            candidateMatches &&
+            donorMatching <= 1 &&
+            source.items.some((i) => !matchesInterests(i, interests) && i.kind === "place")
+          ) {
             continue;
           }
           if (!itemFitsDay(candidate, target.items, plan)) continue;
@@ -465,7 +452,6 @@ function rebalanceSparseDays(days: ItineraryDay[], plan: TripPlan): ItineraryDay
 
   return balanced.map(recalculateDay);
 }
-
 
 /**
  * A road journey can legitimately surface en-route stops, so guard against the
@@ -517,9 +503,7 @@ function normalizeResponse(body: unknown, plan: TripPlan): ItineraryResult {
   const spanDays =
     startDate && endDate && endDate >= startDate
       ? Math.round(
-          (new Date(`${endDate}T00:00:00`).getTime() -
-            new Date(`${startDate}T00:00:00`).getTime()) /
-            86_400_000,
+          (new Date(`${endDate}T00:00:00`).getTime() - new Date(`${startDate}T00:00:00`).getTime()) / 86_400_000,
         ) + 1
       : parsedDays.length;
   const alignedDays = parsedDays.slice(0, spanDays).map((day: ItineraryDay, i: number) => ({
@@ -552,8 +536,7 @@ function normalizeResponse(body: unknown, plan: TripPlan): ItineraryResult {
     : balancedDays;
 
   const totalStops = (days as ItineraryDay[]).reduce(
-    (s: number, d: ItineraryDay) =>
-      s + d.items.filter((i: ItineraryItem) => i.kind === "place").length,
+    (s: number, d: ItineraryDay) => s + d.items.filter((i: ItineraryItem) => i.kind === "place").length,
     0,
   );
 
@@ -578,16 +561,11 @@ function normalizeResponse(body: unknown, plan: TripPlan): ItineraryResult {
       const name = asString(r.name);
       return name ? { name, reason: asString(r.reason, "Could not be scheduled.") } : null;
     })
-    .filter(
-      (u: { name: string; reason: string } | null): u is { name: string; reason: string } =>
-        u !== null,
-    );
+    .filter((u: { name: string; reason: string } | null): u is { name: string; reason: string } => u !== null);
 
   const itinerary: GeneratedItinerary = {
     destination: city,
-    startingLocation:
-      origin ||
-      asString(root.starting_location ?? root.startingLocation, ""),
+    startingLocation: origin || asString(root.starting_location ?? root.startingLocation, ""),
     days,
     totalCostInr: asNumber(
       root.total_estimated_cost ?? root.total_cost_inr ?? root.total_cost,

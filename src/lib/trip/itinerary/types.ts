@@ -18,7 +18,8 @@ export interface ItineraryStop {
   costInr: number;
   /** Whether the entry fee was known (vs. unavailable). */
   entryFeeKnown: boolean;
-  travelFromPrevious: TravelLeg;
+  travelFromPrevious: TravelLeg | null;
+  isMustVisit?: boolean;
 }
 
 export interface ItineraryBreak {
