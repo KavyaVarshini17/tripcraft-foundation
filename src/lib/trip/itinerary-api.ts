@@ -319,7 +319,7 @@ function normalizeDay(raw: unknown, index: number, city: string): ItineraryDay |
     totalTravelMinutes: asNumber(
       r.total_travel_minutes,
       items.reduce(
-        (s: number, i: ItineraryItem) => s + (i.kind === "place" ? i.travelFromPrevious.travelMinutes : 0),
+        (s: number, i: ItineraryItem) => s + (i.kind === "place" ? (i.travelFromPrevious?.travelMinutes ?? 0) : 0),
         0,
       ),
     ),
@@ -368,10 +368,10 @@ function recalculateDay(day: ItineraryDay): ItineraryDay {
     totalCostInr: day.items.reduce((sum, item) => sum + item.costInr, 0),
     totalDistanceKm:
       Math.round(
-        day.items.reduce((sum, item) => sum + (item.kind === "place" ? item.travelFromPrevious.distanceKm : 0), 0) * 10,
+        day.items.reduce((sum, item) => sum + (item.kind === "place" ? (item.travelFromPrevious?.distanceKm ?? 0) : 0), 0) * 10,
       ) / 10,
     totalTravelMinutes: day.items.reduce(
-      (sum, item) => sum + (item.kind === "place" ? item.travelFromPrevious.travelMinutes : 0),
+      (sum, item) => sum + (item.kind === "place" ? (item.travelFromPrevious?.travelMinutes ?? 0) : 0),
       0,
     ),
   };
@@ -526,7 +526,12 @@ function normalizeResponse(body: unknown, plan: TripPlan): ItineraryResult {
                 index === 0 && item.kind === "place"
                   ? {
                       ...item,
-                      travelFromPrevious: { ...item.travelFromPrevious, fromLabel: origin },
+                      travelFromPrevious: {
+                        distanceKm: item.travelFromPrevious?.distanceKm ?? 0,
+                        travelMinutes: item.travelFromPrevious?.travelMinutes ?? 0,
+                        mode: item.travelFromPrevious?.mode ?? "",
+                        fromLabel: origin,
+                      },
                     }
                   : item,
               ),
