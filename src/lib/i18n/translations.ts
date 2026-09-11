@@ -332,6 +332,9 @@ export const en = {
   "category.on_the_way": "On the Way",
   "category.enroute": "On the Way",
 
+  "place.onTheWay": "On the Way: {name}",
+  "note.enrouteStop": "Personalized en-route stop selected by TripCraft using route efficiency and traveler preferences.",
+
   "travelmode.transfer": "transfer",
   "travelmode.driving": "car",
   "travelmode.walking": "walking",
@@ -663,6 +666,9 @@ export const hi: Dictionary = {
   "category.on_the_way": "रास्ते में",
   "category.enroute": "रास्ते में",
 
+  "place.onTheWay": "रास्ते में: {name}",
+  "note.enrouteStop": "TripCraft ने मार्ग की कुशलता और यात्री की पसंद के आधार पर चुना गया व्यक्तिगत रास्ते का पड़ाव।",
+
   "travelmode.transfer": "यात्रा",
   "travelmode.driving": "कार",
   "travelmode.walking": "पैदल",
@@ -989,6 +995,9 @@ export const te: Dictionary = {
   "category.amusement": "వినోద పార్క్",
   "category.on_the_way": "మార్గంలో",
   "category.enroute": "మార్గంలో",
+
+  "place.onTheWay": "మార్గంలో: {name}",
+  "note.enrouteStop": "మార్గ సామర్థ్యం మరియు ప్రయాణికుల అభిరుచుల ఆధారంగా TripCraft ఎంచుకున్న వ్యక్తిగతీకరించిన మార్గమధ్య విడిది.",
 
   "travelmode.transfer": "ప్రయాణం",
   "travelmode.driving": "కారు",
