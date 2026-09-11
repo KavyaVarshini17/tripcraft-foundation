@@ -382,15 +382,15 @@ function TimelineRow({ item, isLast }: { item: ItineraryItem; isLast: boolean })
                   : t("itin.feeUnavailable")}
               </Detail>
               <Detail icon={<RouteIcon className="size-3.5" />} label={t("itin.detail.distance")}>
-                {item.travelFromPrevious.distanceKm} km
+                {item.travelFromPrevious?.distanceKm ?? 0} km
               </Detail>
               <Detail icon={<Timer className="size-3.5" />} label={t("itin.detail.travel")}>
-                {minutesLabel(item.travelFromPrevious.travelMinutes, t)}
+                {minutesLabel(item.travelFromPrevious?.travelMinutes ?? 0, t)}
               </Detail>
             </dl>
 
             <p className="mt-3 text-[0.7rem] text-muted-foreground">
-              {item.travelFromPrevious.label} ·{" "}
+              {item.travelFromPrevious?.fromLabel ? `${item.travelFromPrevious.fromLabel} · ` : ""}
               {item.place.openingTime && item.place.closingTime
                 ? `${item.place.openingTime} – ${item.place.closingTime}`
                 : t("itin.hoursUnavailable")}
