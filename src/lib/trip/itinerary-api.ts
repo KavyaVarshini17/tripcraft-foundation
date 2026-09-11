@@ -399,11 +399,8 @@ function recalculateDay(day: ItineraryDay): ItineraryDay {
  * their service-provided times, opening-hours checks and travel data remain
  * unchanged.
  */
-const matchesInterests = (item: ItineraryItem, interests: string[]): boolean => {
-  if (item.kind !== "place" || interests.length === 0) return false;
-  const wanted = new Set(interests.map((i) => i.toLowerCase().trim()));
-  return (item.place.categories ?? []).some((c) => wanted.has(String(c).toLowerCase().trim()));
-};
+const matchesInterests = (item: ItineraryItem, interests: string[]): boolean =>
+  item.kind === "place" && placeMatchesInterests(item.place, interests);
 
 function rebalanceSparseDays(days: ItineraryDay[], plan: TripPlan): ItineraryDay[] {
   const emptyIndexes = days

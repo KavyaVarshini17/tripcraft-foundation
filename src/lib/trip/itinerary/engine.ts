@@ -10,6 +10,7 @@
 import { localPlacesProvider, resolveDestinationCity } from "../places/provider";
 import type { PlaceRecord, PlacesProvider } from "../places/types";
 import type { TransportMode, TripPlan } from "../types";
+import { interestMatchCount, placeMatchesInterests } from "../interests";
 import type {
   GeneratedItinerary,
   ItineraryDay,
@@ -197,7 +198,6 @@ export function generateItinerary(plan: TripPlan, options: GenerateOptions = {})
       });
   }
 
-  const interests = new Set(plan.interests);
   // Priority: selected interests first, then must-visits, then everything else.
   // Generic bonuses must never let an unselected category outrank a place that
   // actually matches a selected interest.
