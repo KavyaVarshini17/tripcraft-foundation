@@ -27,7 +27,7 @@ export function translateDynamic(t: Translate, value: string): string {
   for (const part of rest) {
     const index = part.indexOf("=");
     if (index <= 0) continue;
-    vars[part.slice(0, index)] = decodeURIComponent(part.slice(index + 1));
+    vars[part.slice(0, index)] = translateDynamic(t, decodeURIComponent(part.slice(index + 1)));
   }
   return t(head, vars);
 }

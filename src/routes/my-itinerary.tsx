@@ -19,6 +19,7 @@ import {
 
 import { SiteHeader } from "@/components/trip/site-header";
 import { useI18n, type Translate } from "@/lib/i18n/i18n-context";
+import { translateCategory, translateDynamic } from "@/lib/i18n/dynamic";
 import { useTripPlan } from "@/lib/trip/trip-plan-context";
 import { loadGeneratedResult } from "@/lib/trip/itinerary-api";
 import type { GeneratedItinerary, ItineraryDay, ItineraryItem } from "@/lib/trip/itinerary/types";
@@ -95,10 +96,12 @@ function MyItineraryPage() {
             <span className="mx-auto flex size-12 items-center justify-center rounded-2xl bg-secondary text-primary">
               <AlertTriangle className="size-5" />
             </span>
-            <h1 className="mt-5 font-display text-2xl tracking-tight text-foreground">{result.reason}</h1>
+            <h1 className="mt-5 font-display text-2xl tracking-tight text-foreground">
+              {translateDynamic(t, result.reason)}
+            </h1>
             <ul className="mx-auto mt-3 max-w-md space-y-2 text-sm text-muted-foreground">
               {result.details.map((detail) => (
-                <li key={detail}>{detail}</li>
+                <li key={detail}>{translateDynamic(t, detail)}</li>
               ))}
             </ul>
             <div className="mt-7 flex flex-wrap justify-center gap-3">
@@ -190,7 +193,7 @@ function ItineraryView(props: { itinerary: GeneratedItinerary; interests: string
           </h2>
           <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
             {itinerary.warnings.map((w) => (
-              <li key={w}>{w}</li>
+              <li key={w}>{translateDynamic(t, w)}</li>
             ))}
           </ul>
         </section>
@@ -209,7 +212,7 @@ function ItineraryView(props: { itinerary: GeneratedItinerary; interests: string
             {itinerary.unscheduled.map((item) => (
               <li key={item.name}>
                 <span className="font-medium text-foreground">{item.name}</span>
-                <span className="block text-muted-foreground">{item.reason}</span>
+                <span className="block text-muted-foreground">{translateDynamic(t, item.reason)}</span>
               </li>
             ))}
           </ul>
@@ -264,7 +267,7 @@ function DayCard({ day }: { day: ItineraryDay }) {
 
       {day.items.length === 0 ? (
         <p className="mt-6 rounded-2xl border border-dashed border-border px-4 py-6 text-center text-sm text-muted-foreground">
-          {day.notes[0] ?? t("itin.emptyDay")}
+          {day.notes[0] ? translateDynamic(t, day.notes[0]) : t("itin.emptyDay")}
         </p>
       ) : (
         <ol className="mt-6 space-y-0">
@@ -291,7 +294,7 @@ function DayCard({ day }: { day: ItineraryDay }) {
       {day.notes.length > 0 && day.items.length > 0 ? (
         <ul className="mt-3 space-y-1 text-xs text-muted-foreground">
           {day.notes.map((note) => (
-            <li key={note}>{note}</li>
+            <li key={note}>{translateDynamic(t, note)}</li>
           ))}
         </ul>
       ) : null}
@@ -324,7 +327,7 @@ function TimelineRow({ item, isLast }: { item: ItineraryItem; isLast: boolean })
           <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1">
             <span className="flex items-center gap-2 text-sm font-semibold text-foreground">
               <Utensils className="size-4 text-muted-foreground" />
-              {item.label}
+              {translateDynamic(t, item.label)}
             </span>
             <span className="text-xs text-muted-foreground">
               {minutesLabel(item.durationMinutes, t)} · {inr(item.costInr)}
@@ -365,7 +368,7 @@ function TimelineRow({ item, isLast }: { item: ItineraryItem; isLast: boolean })
                   key={category}
                   className="rounded-full bg-secondary px-3 py-1 text-[0.7rem] font-medium capitalize text-secondary-foreground"
                 >
-                  {category.replace("_", " ")}
+                  {translateCategory(t, category)}
                 </li>
               ))}
             </ul>
@@ -390,7 +393,9 @@ function TimelineRow({ item, isLast }: { item: ItineraryItem; isLast: boolean })
             </dl>
 
             <p className="mt-3 text-[0.7rem] text-muted-foreground">
-              {item.travelFromPrevious?.fromLabel ? `${item.travelFromPrevious.fromLabel} · ` : ""}
+              {item.travelFromPrevious?.fromLabel
+                ? `${translateDynamic(t, item.travelFromPrevious.fromLabel)} · `
+                : ""}
               {item.place.openingTime && item.place.closingTime
                 ? `${item.place.openingTime} – ${item.place.closingTime}`
                 : t("itin.hoursUnavailable")}
