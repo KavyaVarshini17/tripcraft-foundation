@@ -10,8 +10,10 @@ import { StepInterests } from "@/components/trip/steps/step-interests";
 import { StepStyle } from "@/components/trip/steps/step-style";
 import { StepDaily } from "@/components/trip/steps/step-daily";
 import { StepMustVisit } from "@/components/trip/steps/step-must-visit";
+import { useI18n } from "@/lib/i18n/i18n-context";
+import type { TranslationKey } from "@/lib/i18n/translations";
 import { useTripPlan } from "@/lib/trip/trip-plan-context";
-import { validateStep, type StepErrors } from "@/lib/trip/validation";
+import { validateStep, type StepErrorKeys, type StepErrors } from "@/lib/trip/validation";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/planner")({
@@ -33,26 +35,31 @@ export const Route = createFileRoute("/planner")({
   component: PlannerPage,
 });
 
-const STEPS = [
-  "Destination",
-  "Travelers & Budget",
-  "Interests",
-  "Travel Style",
-  "Daily Preferences",
-  "Must Visit",
+const STEP_KEYS: TranslationKey[] = [
+  "planner.step.destination",
+  "planner.step.travelers",
+  "planner.step.interests",
+  "planner.step.style",
+  "planner.step.daily",
+  "planner.step.mustVisit",
 ];
 
 function PlannerPage() {
   const [step, setStep] = useState(0);
-  const [errors, setErrors] = useState<StepErrors>({});
+  const [errorKeys, setErrorKeys] = useState<StepErrorKeys>({});
   const { plan } = useTripPlan();
+  const { t } = useI18n();
   const navigate = useNavigate();
 
-  const isLast = step === STEPS.length - 1;
+  const isLast = step === STEP_KEYS.length - 1;
+
+  const errors: StepErrors = Object.fromEntries(
+    Object.entries(errorKeys).map(([field, key]) => [field, t(key)]),
+  );
 
   const goNext = () => {
     const found = validateStep(step, plan);
-    setErrors(found);
+    setErrorKeys(found);
     if (Object.keys(found).length > 0) return;
     if (isLast) {
       navigate({ to: "/itinerary" });
@@ -63,7 +70,7 @@ function PlannerPage() {
   };
 
   const goBack = () => {
-    setErrors({});
+    setErrorKeys({});
     setStep((s) => Math.max(0, s - 1));
     if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -75,23 +82,23 @@ function PlannerPage() {
       <main className="mx-auto w-full max-w-3xl px-5 py-10 sm:py-14">
         <div className="mb-8">
           <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-            Step {step + 1} of {STEPS.length}
+            {t("planner.progress", { current: step + 1, total: STEP_KEYS.length })}
           </p>
           <h1 className="mt-2 font-display text-3xl tracking-tight text-foreground sm:text-4xl">
-            Plan your trip
+            {t("planner.title")}
           </h1>
 
           <div className="mt-6 h-1.5 w-full overflow-hidden rounded-full bg-secondary">
             <div
               className="h-full rounded-full bg-primary transition-all duration-500"
-              style={{ width: `${((step + 1) / STEPS.length) * 100}%` }}
+              style={{ width: `${((step + 1) / STEP_KEYS.length) * 100}%` }}
             />
           </div>
 
           <ol className="mt-4 flex flex-wrap gap-x-4 gap-y-2 text-xs">
-            {STEPS.map((label, index) => (
+            {STEP_KEYS.map((key, index) => (
               <li
-                key={label}
+                key={key}
                 className={cn(
                   "flex items-center gap-1.5 font-medium",
                   index === step
@@ -106,7 +113,7 @@ function PlannerPage() {
                 ) : (
                   <span className="text-[0.7rem]">{index + 1}.</span>
                 )}
-                {label}
+                {t(key)}
               </li>
             ))}
           </ol>
@@ -127,10 +134,10 @@ function PlannerPage() {
         <div className="mt-6 flex items-center justify-between gap-3">
           <Button variant="outline" onClick={goBack} disabled={step === 0} className="rounded-full">
             <ArrowLeft className="size-4" />
-            Back
+            {t("common.back")}
           </Button>
           <Button onClick={goNext} className="rounded-full px-6">
-            {isLast ? "Review trip" : "Next"}
+            {isLast ? t("common.reviewTrip") : t("common.next")}
             <ArrowRight className="size-4" />
           </Button>
         </div>

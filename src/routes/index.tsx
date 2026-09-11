@@ -3,6 +3,8 @@ import { ArrowRight, CalendarRange, Sparkles, Route as RouteIcon, Wallet } from 
 
 import heroImage from "@/assets/hero-travel.jpg";
 import { SiteHeader } from "@/components/trip/site-header";
+import { useI18n } from "@/lib/i18n/i18n-context";
+import type { TranslationKey } from "@/lib/i18n/translations";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -24,30 +26,16 @@ export const Route = createFileRoute("/")({
   component: Index,
 });
 
-const highlights = [
-  {
-    icon: Sparkles,
-    title: "Personal, not generic",
-    body: "Your interests, pace and travel companions shape every suggestion.",
-  },
-  {
-    icon: CalendarRange,
-    title: "Day-by-day structure",
-    body: "A clear travel window with realistic start and end times each day.",
-  },
-  {
-    icon: Wallet,
-    title: "Budget aware",
-    body: "Plan around a total budget in your own currency, from INR upward.",
-  },
-  {
-    icon: RouteIcon,
-    title: "Built to route",
-    body: "Structured trip data designed to plug into maps and routing later.",
-  },
+const highlights: { icon: typeof Sparkles; title: TranslationKey; body: TranslationKey }[] = [
+  { icon: Sparkles, title: "home.f1.title", body: "home.f1.body" },
+  { icon: CalendarRange, title: "home.f2.title", body: "home.f2.body" },
+  { icon: Wallet, title: "home.f3.title", body: "home.f3.body" },
+  { icon: RouteIcon, title: "home.f4.title", body: "home.f4.body" },
 ];
 
 function Index() {
+  const { t } = useI18n();
+
   return (
     <div className="min-h-screen bg-background">
       <SiteHeader />
@@ -69,28 +57,27 @@ function Index() {
             <div className="max-w-2xl animate-in fade-in slide-in-from-bottom-4 duration-700">
               <span className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-primary-foreground backdrop-blur">
                 <Sparkles className="size-3.5" />
-                AI-powered trip design
+                {t("home.badge")}
               </span>
               <h1 className="mt-6 font-display text-4xl leading-[1.08] tracking-tight text-primary-foreground sm:text-6xl">
-                Personalized itineraries, crafted around the way you travel.
+                {t("home.title")}
               </h1>
               <p className="mt-5 max-w-xl text-base leading-relaxed text-primary-foreground/85 sm:text-lg">
-                Tell TripCraft where you're going, who's coming along, your budget and what you love
-                doing. We shape a trip that fits your pace — not a generic tourist checklist.
+                {t("home.subtitle")}
               </p>
               <div className="mt-9 flex flex-wrap items-center gap-3">
                 <Link
                   to="/planner"
                   className="group inline-flex items-center gap-2 rounded-full bg-accent-warm px-7 py-3.5 text-sm font-semibold text-accent-warm-foreground shadow-lift transition-transform duration-200 hover:-translate-y-0.5"
                 >
-                  Plan My Trip
+                  {t("home.ctaPrimary")}
                   <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
                 </Link>
                 <Link
                   to="/itinerary"
                   className="inline-flex items-center gap-2 rounded-full border border-white/30 px-7 py-3.5 text-sm font-semibold text-primary-foreground backdrop-blur transition-colors hover:bg-white/10"
                 >
-                  View my itinerary
+                  {t("home.ctaSecondary")}
                 </Link>
               </div>
             </div>
@@ -100,11 +87,9 @@ function Index() {
         <section className="mx-auto w-full max-w-6xl px-5 py-16 sm:py-24">
           <div className="max-w-xl">
             <h2 className="font-display text-3xl tracking-tight text-foreground sm:text-4xl">
-              A planner that actually listens
+              {t("home.featuresTitle")}
             </h2>
-            <p className="mt-3 text-muted-foreground">
-              Six quick steps capture everything a great itinerary needs — and nothing it doesn't.
-            </p>
+            <p className="mt-3 text-muted-foreground">{t("home.featuresSubtitle")}</p>
           </div>
 
           <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
@@ -116,8 +101,8 @@ function Index() {
                 <span className="flex size-11 items-center justify-center rounded-2xl bg-secondary text-primary">
                   <item.icon className="size-5" />
                 </span>
-                <h3 className="mt-5 text-base font-semibold text-foreground">{item.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{item.body}</p>
+                <h3 className="mt-5 text-base font-semibold text-foreground">{t(item.title)}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{t(item.body)}</p>
               </article>
             ))}
           </div>
@@ -126,17 +111,16 @@ function Index() {
         <section className="mx-auto w-full max-w-6xl px-5 pb-24">
           <div className="overflow-hidden rounded-[2rem] bg-primary px-8 py-14 text-center shadow-lift sm:px-16">
             <h2 className="font-display text-3xl tracking-tight text-primary-foreground sm:text-4xl">
-              Ready when you are
+              {t("home.finalTitle")}
             </h2>
             <p className="mx-auto mt-3 max-w-lg text-sm text-primary-foreground/80 sm:text-base">
-              Start with your destination and dates. You can come back and refine everything before
-              generating your itinerary.
+              {t("home.finalBody")}
             </p>
             <Link
               to="/planner"
               className="mt-8 inline-flex items-center gap-2 rounded-full bg-accent-warm px-7 py-3.5 text-sm font-semibold text-accent-warm-foreground transition-transform duration-200 hover:-translate-y-0.5"
             >
-              Plan My Trip
+              {t("home.ctaPrimary")}
               <ArrowRight className="size-4" />
             </Link>
           </div>
@@ -144,9 +128,7 @@ function Index() {
       </main>
 
       <footer className="border-t border-border py-8">
-        <p className="text-center text-xs text-muted-foreground">
-          TripCraft — personalized travel planning.
-        </p>
+        <p className="text-center text-xs text-muted-foreground">{t("home.footer")}</p>
       </footer>
     </div>
   );
