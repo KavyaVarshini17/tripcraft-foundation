@@ -217,7 +217,7 @@ function ItineraryView(props: { itinerary: GeneratedItinerary; interests: string
           <ul className="mt-3 space-y-3 text-sm">
             {itinerary.unscheduled.map((item) => (
               <li key={item.name}>
-                <span className="font-medium text-foreground">{item.name}</span>
+                <span className="font-medium text-foreground">{translatePlaceName(t, item.name)}</span>
                 <span className="block text-muted-foreground">{translateDynamic(t, item.reason)}</span>
               </li>
             ))}
