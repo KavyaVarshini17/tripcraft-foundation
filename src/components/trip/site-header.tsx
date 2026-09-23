@@ -15,7 +15,7 @@ export function SiteHeader() {
           <span className="flex size-9 items-center justify-center rounded-xl bg-primary text-primary-foreground shadow-soft">
             <Compass className="size-5" />
           </span>
-          <span className="font-display text-lg tracking-tight text-foreground">TripCraft</span>
+          <span className="hidden font-display text-lg tracking-tight text-foreground sm:inline">TripCraft</span>
         </Link>
         <div className="flex min-w-0 items-center gap-1 sm:gap-2">
           <ThemeToggle />
