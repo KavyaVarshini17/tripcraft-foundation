@@ -50,19 +50,19 @@ function Index() {
               height={1280}
               className="size-full object-cover"
             />
-            <div className="absolute inset-0 bg-gradient-to-r from-[oklch(0.2_0.04_205_/_0.9)] via-[oklch(0.2_0.04_205_/_0.6)] to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-r from-[oklch(0.17_0.05_255_/_0.9)] via-[oklch(0.17_0.05_255_/_0.6)] to-transparent" />
           </div>
 
           <div className="relative mx-auto w-full max-w-6xl px-5 py-24 sm:py-32 lg:py-40">
             <div className="max-w-2xl animate-in fade-in slide-in-from-bottom-4 duration-700">
-              <span className="inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-primary-foreground backdrop-blur">
+              <span className="inline-flex items-center gap-2 rounded-full border border-hero-foreground/25 bg-hero-foreground/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest text-hero-foreground backdrop-blur">
                 <Sparkles className="size-3.5" />
                 {t("home.badge")}
               </span>
-              <h1 className="mt-6 font-display text-4xl leading-[1.08] tracking-tight text-primary-foreground sm:text-6xl">
+              <h1 className="mt-6 font-display text-4xl leading-[1.08] tracking-tight text-hero-foreground sm:text-6xl">
                 {t("home.title")}
               </h1>
-              <p className="mt-5 max-w-xl text-base leading-relaxed text-primary-foreground/85 sm:text-lg">
+              <p className="mt-5 max-w-xl text-base leading-relaxed text-hero-foreground/85 sm:text-lg">
                 {t("home.subtitle")}
               </p>
               <div className="mt-9 flex flex-wrap items-center gap-3">
@@ -75,7 +75,7 @@ function Index() {
                 </Link>
                 <Link
                   to="/itinerary"
-                  className="inline-flex items-center gap-2 rounded-full border border-white/30 px-7 py-3.5 text-sm font-semibold text-primary-foreground backdrop-blur transition-colors hover:bg-white/10"
+                  className="inline-flex items-center gap-2 rounded-full border border-hero-foreground/30 px-7 py-3.5 text-sm font-semibold text-hero-foreground backdrop-blur transition-colors hover:bg-hero-foreground/10"
                 >
                   {t("home.ctaSecondary")}
                 </Link>
