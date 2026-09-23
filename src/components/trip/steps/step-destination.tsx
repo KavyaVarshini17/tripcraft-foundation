@@ -1,6 +1,14 @@
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Field, StepHeading } from "@/components/trip/field";
 import { useI18n } from "@/lib/i18n/i18n-context";
+import { INDIAN_TRAVEL_LOCATIONS } from "@/lib/trip/locations";
 import { useTripPlan } from "@/lib/trip/trip-plan-context";
 import { todayIsoDate, type StepErrors } from "@/lib/trip/validation";
 
@@ -14,26 +22,44 @@ export function StepDestination({ errors }: { errors: StepErrors }) {
       <StepHeading title={t("step1.title")} description={t("step1.desc")} />
       <div className="grid gap-5 sm:grid-cols-2">
         <Field label={t("field.destination")} htmlFor="destination" error={errors.destination}>
-          <Input
-            id="destination"
-            placeholder={t("ph.destination")}
+          <Select
             value={d.destination}
-            onChange={(e) => updateSection("destinationDetails", { destination: e.target.value })}
-          />
+            onValueChange={(destination) => updateSection("destinationDetails", { destination })}
+          >
+            <SelectTrigger id="destination" className="h-9 bg-transparent">
+              <SelectValue placeholder={t("ph.destination")} />
+            </SelectTrigger>
+            <SelectContent>
+              {INDIAN_TRAVEL_LOCATIONS.map((location) => (
+                <SelectItem key={location} value={location} disabled={location !== "Goa"}>
+                  {location}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </Field>
         <Field
           label={t("field.startingLocation")}
           htmlFor="startingLocation"
           error={errors.startingLocation}
         >
-          <Input
-            id="startingLocation"
-            placeholder={t("ph.startingLocation")}
+          <Select
             value={d.startingLocation}
-            onChange={(e) =>
-              updateSection("destinationDetails", { startingLocation: e.target.value })
+            onValueChange={(startingLocation) =>
+              updateSection("destinationDetails", { startingLocation })
             }
-          />
+          >
+            <SelectTrigger id="startingLocation" className="h-9 bg-transparent">
+              <SelectValue placeholder={t("ph.startingLocation")} />
+            </SelectTrigger>
+            <SelectContent>
+              {INDIAN_TRAVEL_LOCATIONS.map((location) => (
+                <SelectItem key={location} value={location} disabled={location !== "Mumbai"}>
+                  {location}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </Field>
         <Field label={t("field.startDate")} htmlFor="startDate" error={errors.startDate}>
           <Input

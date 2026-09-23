@@ -14,12 +14,12 @@ export function LanguageSelect() {
   const { language, setLanguage, t } = useI18n();
 
   return (
-    <div className="flex items-center gap-1.5">
-      <Languages className="size-4 text-muted-foreground" aria-hidden="true" />
+    <div className="flex min-w-0 items-center gap-1 sm:gap-1.5">
+      <Languages className="hidden size-4 text-muted-foreground sm:block" aria-hidden="true" />
       <Select value={language} onValueChange={(value) => setLanguage(value as LanguageCode)}>
         <SelectTrigger
           aria-label={t("lang.label")}
-          className="h-9 w-[7.5rem] rounded-full border-border bg-card text-sm"
+          className="h-9 w-[5.75rem] rounded-full border-border bg-card text-xs sm:w-[7.5rem] sm:text-sm"
         >
           <SelectValue />
         </SelectTrigger>
