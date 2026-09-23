@@ -15,6 +15,8 @@ export type LanguageCode = (typeof LANGUAGES)[number]["code"];
 
 export const en = {
   "lang.label": "Language",
+  "theme.switchDark": "Switch to dark mode",
+  "theme.switchLight": "Switch to light mode",
 
   "nav.planner": "Planner",
   "nav.itinerary": "Itinerary",
@@ -350,6 +352,8 @@ export type Dictionary = Partial<Record<TranslationKey, string>>;
 
 export const hi: Dictionary = {
   "lang.label": "भाषा",
+  "theme.switchDark": "डार्क मोड पर जाएँ",
+  "theme.switchLight": "लाइट मोड पर जाएँ",
 
   "nav.planner": "प्लानर",
   "nav.itinerary": "यात्रा योजना",
@@ -680,6 +684,8 @@ export const hi: Dictionary = {
 
 export const te: Dictionary = {
   "lang.label": "భాష",
+  "theme.switchDark": "డార్క్ మోడ్‌కు మారండి",
+  "theme.switchLight": "లైట్ మోడ్‌కు మారండి",
 
   "nav.planner": "ప్లానర్",
   "nav.itinerary": "ప్రయాణ ప్రణాళిక",

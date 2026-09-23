@@ -12,6 +12,7 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { I18nProvider, useI18n } from "@/lib/i18n/i18n-context";
+import { ThemeProvider } from "@/lib/theme/theme-context";
 import { TripPlanProvider } from "@/lib/trip/trip-plan-context";
 
 function NotFoundComponent() {
@@ -131,12 +132,14 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <I18nProvider>
-        <TripPlanProvider>
-          {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-          <Outlet />
-        </TripPlanProvider>
-      </I18nProvider>
+      <ThemeProvider>
+        <I18nProvider>
+          <TripPlanProvider>
+            {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+            <Outlet />
+          </TripPlanProvider>
+        </I18nProvider>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }

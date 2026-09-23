@@ -95,25 +95,33 @@ function PlannerPage() {
             />
           </div>
 
-          <ol className="mt-4 flex flex-wrap gap-x-4 gap-y-2 text-xs">
+          <ol className="mt-4 flex gap-2 overflow-x-auto pb-2 text-xs sm:flex-wrap sm:gap-x-4 sm:gap-y-2 sm:overflow-visible sm:pb-0">
             {STEP_KEYS.map((key, index) => (
-              <li
-                key={key}
-                className={cn(
-                  "flex items-center gap-1.5 font-medium",
-                  index === step
-                    ? "text-foreground"
-                    : index < step
-                      ? "text-primary"
-                      : "text-muted-foreground",
-                )}
-              >
-                {index < step ? (
-                  <Check className="size-3.5" />
-                ) : (
-                  <span className="text-[0.7rem]">{index + 1}.</span>
-                )}
-                {t(key)}
+              <li key={key} className="shrink-0">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setErrorKeys({});
+                    setStep(index);
+                    window.scrollTo({ top: 0, behavior: "smooth" });
+                  }}
+                  aria-current={index === step ? "step" : undefined}
+                  className={cn(
+                    "flex items-center gap-1.5 rounded-md py-1 font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                    index === step
+                      ? "text-foreground"
+                      : index < step
+                        ? "text-primary hover:text-primary/80"
+                        : "text-muted-foreground hover:text-foreground",
+                  )}
+                >
+                  {index < step ? (
+                    <Check className="size-3.5" />
+                  ) : (
+                    <span className="text-[0.7rem]">{index + 1}.</span>
+                  )}
+                  {t(key)}
+                </button>
               </li>
             ))}
           </ol>
