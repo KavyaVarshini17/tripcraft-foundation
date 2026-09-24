@@ -68,7 +68,7 @@ function Index() {
               <div className="mt-9 flex flex-wrap items-center gap-3">
                 <Link
                   to="/planner"
-                  className="group inline-flex items-center gap-2 rounded-full bg-hero-cta px-7 py-3.5 text-sm font-semibold text-hero-foreground shadow-lift transition-transform duration-200 hover:-translate-y-0.5"
+                  className="group inline-flex items-center gap-2 rounded-full border border-hero-foreground/30 bg-hero-cta/70 px-7 py-3.5 text-sm font-semibold text-hero-foreground shadow-lift backdrop-blur transition-transform duration-200 hover:-translate-y-0.5"
                 >
                   {t("home.ctaPrimary")}
                   <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
@@ -118,7 +118,7 @@ function Index() {
             </p>
             <Link
               to="/planner"
-              className="mt-8 inline-flex items-center gap-2 rounded-full bg-accent-warm px-7 py-3.5 text-sm font-semibold text-accent-warm-foreground transition-transform duration-200 hover:-translate-y-0.5"
+              className="mt-8 inline-flex items-center gap-2 rounded-full bg-hero-cta px-7 py-3.5 text-sm font-semibold text-hero-foreground transition-transform duration-200 hover:-translate-y-0.5"
             >
               {t("home.ctaPrimary")}
               <ArrowRight className="size-4" />
