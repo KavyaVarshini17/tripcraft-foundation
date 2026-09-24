@@ -18,19 +18,19 @@ interface ThemeContextValue {
 }
 
 const ThemeContext = createContext<ThemeContextValue>({
-  theme: "light",
+  theme: "dark",
   toggleTheme: () => undefined,
 });
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setTheme] = useState<Theme>("light");
+  const [theme, setTheme] = useState<Theme>("dark");
 
   useEffect(() => {
     try {
       const stored = window.localStorage.getItem(STORAGE_KEY);
-      if (stored === "dark") setTheme("dark");
+      if (stored === "light" || stored === "dark") setTheme(stored);
     } catch {
-      // Light mode remains the default when storage is unavailable.
+      // Dark mode remains the default when storage is unavailable.
     }
   }, []);
 
