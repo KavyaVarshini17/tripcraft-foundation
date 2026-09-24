@@ -149,11 +149,11 @@ function ItineraryView(props: { itinerary: GeneratedItinerary; interests: string
   return (
     <>
       <header className="rounded-3xl bg-primary px-7 py-10 text-primary-foreground shadow-lift sm:px-10">
-        <p className="text-xs font-semibold uppercase tracking-widest text-primary-foreground/70">
+        <p className="text-xs font-bold uppercase tracking-widest text-primary-foreground/70">
           {t("itin.eyebrow")}
         </p>
-        <h1 className="mt-2 font-display text-3xl tracking-tight sm:text-5xl">{itinerary.destination}</h1>
-        <p className="mt-3 text-sm text-primary-foreground/80">
+        <h1 className="mt-2 font-display text-3xl font-extrabold tracking-tight sm:text-5xl">{itinerary.destination}</h1>
+        <p className="mt-3 text-sm font-semibold text-primary-foreground/80">
           {dayCount > 1 ? t("itin.daysCount", { count: dayCount }) : t("itin.dayCount", { count: dayCount })} ·{" "}
           {t("itin.stops", { count: totalStops })} ·{" "}
           {itinerary.travelers > 1
@@ -164,7 +164,7 @@ function ItineraryView(props: { itinerary: GeneratedItinerary; interests: string
             : ""}
         </p>
         {interests.length > 0 ? (
-          <p className="mt-2 text-xs text-primary-foreground/70">
+          <p className="mt-2 text-xs font-semibold text-primary-foreground/70">
             {t("itin.builtAround", { interests: interests.join(" · ") })}
           </p>
         ) : null}
