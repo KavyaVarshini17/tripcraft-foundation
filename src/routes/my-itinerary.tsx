@@ -149,7 +149,7 @@ function ItineraryView(props: { itinerary: GeneratedItinerary; interests: string
   return (
     <>
       <header className="rounded-3xl bg-primary px-7 py-10 text-primary-foreground shadow-lift sm:px-10">
-        <p className="text-xs font-semibold uppercase tracking-widest text-primary-foreground/70">
+        <p className="text-xs font-bold uppercase tracking-widest text-primary-foreground/70">
           {t("itin.eyebrow")}
         </p>
         <h1 className="mt-2 font-display text-3xl font-extrabold tracking-tight sm:text-5xl">{itinerary.destination}</h1>
