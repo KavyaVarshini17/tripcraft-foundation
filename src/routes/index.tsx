@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight, CalendarRange, Sparkles, Route as RouteIcon, Wallet } from "lucide-react";
 
-import heroImage from "@/assets/hero-travel.jpg";
+import heroImage from "@/assets/tripcraft-earth-2a.jpg";
 import { SiteHeader } from "@/components/trip/site-header";
 import { useI18n } from "@/lib/i18n/i18n-context";
 import type { TranslationKey } from "@/lib/i18n/translations";
@@ -45,9 +45,9 @@ function Index() {
           <div className="absolute inset-0">
             <img
               src={heroImage}
-              alt="Aerial view of a coastal road winding along turquoise sea cliffs at golden hour"
-              width={1920}
-              height={1280}
+              alt="Earth with airplanes and flight paths"
+              width={1376}
+              height={768}
               className="size-full object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-r from-[oklch(0.17_0.05_255_/_0.9)] via-[oklch(0.17_0.05_255_/_0.6)] to-transparent" />
@@ -68,7 +68,7 @@ function Index() {
               <div className="mt-9 flex flex-wrap items-center gap-3">
                 <Link
                   to="/planner"
-                  className="group inline-flex items-center gap-2 rounded-full bg-accent-warm px-7 py-3.5 text-sm font-semibold text-accent-warm-foreground shadow-lift transition-transform duration-200 hover:-translate-y-0.5"
+                  className="group inline-flex items-center gap-2 rounded-full bg-hero-cta px-7 py-3.5 text-sm font-semibold text-hero-foreground shadow-lift transition-transform duration-200 hover:-translate-y-0.5"
                 >
                   {t("home.ctaPrimary")}
                   <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />

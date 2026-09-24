@@ -62,6 +62,7 @@
   --color-accent-warm: var(--accent-warm);
   --color-accent-warm-foreground: var(--accent-warm-foreground);
   --color-hero-foreground: var(--hero-foreground);
+  --color-hero-cta: var(--hero-cta);
   --font-display: "Fraunces", ui-serif, Georgia, serif;
   --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif;
   --shadow-soft: 0 1px 2px oklch(0.24 0.04 255 / 0.06), 0 12px 32px -12px oklch(0.24 0.04 255 / 0.16);
@@ -87,6 +88,7 @@
   --accent-warm: oklch(0.62 0.18 252);
   --accent-warm-foreground: oklch(0.985 0.004 255);
   --hero-foreground: oklch(0.985 0.004 255);
+  --hero-cta: oklch(0.17 0.035 255);
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(0.984 0.003 247.858);
   --border: oklch(0.9 0.025 255);
@@ -113,6 +115,7 @@
   --accent-warm: oklch(0.68 0.16 250);
   --accent-warm-foreground: oklch(0.985 0.004 255);
   --hero-foreground: oklch(0.985 0.004 255);
+  --hero-cta: oklch(0.17 0.035 255);
   --card: oklch(0.22 0.04 255);
   --card-foreground: oklch(0.96 0.01 255);
   --popover: oklch(0.21 0.045 255);
